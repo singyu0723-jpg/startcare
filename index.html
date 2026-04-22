@@ -6,122 +6,402 @@
 <title>星辰護理日誌</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;background:#f5f5f7;min-height:100vh}
-.app{max-width:480px;margin:0 auto;min-height:100vh;background:#fff;position:relative;box-shadow:0 0 40px rgba(0,0,0,0.08)}
-.top-bar{padding:12px 16px 10px;border-bottom:0.5px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;background:#fff;position:sticky;top:0;z-index:10}
-.brand{font-size:17px;font-weight:600;color:#1a1a1a}
-.brand em{font-style:normal;color:#185FA5}
-.cg-pill{font-size:12px;color:#555;cursor:pointer;padding:5px 12px;border:0.5px solid #ccc;border-radius:20px;background:#fafafa}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:#ccc;display:inline-block;margin-right:6px;transition:background 0.3s}
-.sync-dot.online{background:#34c759}
-.sync-dot.syncing{background:#ff9500;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.tab-bar{display:flex;border-bottom:0.5px solid #e5e5e5;background:#fff}
-.tab{flex:1;padding:11px 2px;text-align:center;font-size:12px;color:#888;cursor:pointer;border-bottom:2px solid transparent}
-.tab.active{color:#185FA5;border-bottom:2px solid #185FA5;font-weight:600}
-.pg{padding:14px 14px 40px}
-.sec{font-size:11px;font-weight:600;color:#999;letter-spacing:0.06em;text-transform:uppercase;margin:18px 0 8px}
-.sec:first-child{margin-top:0}
-.fcard{background:#fff;border:0.5px solid #e5e5e5;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.frow{display:grid;grid-template-columns:72px 1fr 42px;align-items:center;gap:8px;margin-bottom:10px}
+
+/* ── 白底 × 溫潤薄荷綠 ── */
+:root{
+  --bg:#ffffff;
+  --bg-tint:#f6faf7;
+  --surface:#ffffff;
+  --surface-2:#f2f7f4;
+  --ink:#1f2a24;
+  --ink-2:#4a5a52;
+  --muted:#8b9a92;
+  --rim:#e3ece7;
+  --rim-2:#d4e0d9;
+
+  --brand:#4A8F6B;
+  --brand-deep:#377054;
+  --brand-soft:#E8F3EC;
+  --brand-tint:#f0f7f3;
+
+  --accent:#8bb49a;
+  --sand:#c8b98c;
+
+  --danger:#c0553f;
+  --danger-soft:#fbe9e3;
+  --warn:#b07a25;
+  --warn-soft:#fbefd5;
+  --ok:#4A8F6B;
+  --ok-soft:#E8F3EC;
+
+  --shadow-xs:0 1px 2px rgba(20,40,30,.04);
+  --shadow-sm:0 2px 6px -2px rgba(30,60,45,.08), 0 1px 2px rgba(30,60,45,.04);
+  --shadow:0 8px 24px -12px rgba(30,60,45,.18), 0 2px 4px -2px rgba(30,60,45,.06);
+  --radius:16px;
+  --radius-lg:22px;
+}
+
+body{
+  font-family:'Microsoft JhengHei','微軟正黑體',-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif;
+  background:var(--bg);
+  min-height:100vh;color:var(--ink);-webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:transparent;position:relative}
+
+/* ── 頂部 ── */
+.top-bar{
+  padding:14px 18px;display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;z-index:10;
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+  border-bottom:1px solid var(--rim);
+}
+.brand{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:.02em}
+.brand em{font-style:normal;color:var(--brand-deep);font-weight:700}
+.cg-pill{
+  font-size:12.5px;color:var(--brand-deep);cursor:pointer;
+  padding:7px 14px;border:1px solid var(--rim-2);border-radius:999px;
+  background:var(--brand-soft);font-weight:600;letter-spacing:.02em;
+}
+.cg-pill:active{transform:scale(.97)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#c5d1ca;display:inline-block;margin-right:4px;transition:background .3s;vertical-align:1px}
+.sync-dot.online{background:var(--brand)}
+.sync-dot.syncing{background:var(--sand);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── 分頁 ── */
+.tab-bar{
+  display:flex;gap:4px;padding:8px;margin:10px 14px 4px;
+  background:var(--surface-2);border-radius:14px;border:1px solid var(--rim);
+}
+.tab{
+  flex:1;padding:10px 4px;text-align:center;font-size:13.5px;color:var(--muted);
+  cursor:pointer;border-radius:10px;font-weight:600;letter-spacing:.02em;
+  transition:all .15s;background:transparent;
+}
+.tab.active{color:var(--brand-deep);background:#fff;box-shadow:var(--shadow-xs);border:1px solid var(--rim)}
+
+.pg{padding:12px 14px 40px}
+
+/* ── 小節標題 ── 放大＋綠色強調橫槓 */
+.sec{
+  font-size:15px;font-weight:700;color:var(--ink);
+  letter-spacing:.02em;
+  margin:22px 2px 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.sec::before{
+  content:'';width:4px;height:16px;border-radius:3px;
+  background:var(--brand);
+}
+.sec:first-child{margin-top:6px}
+
+/* ── 卡片 ── */
+.fcard{
+    background:var(--surface);border:1px solid var(--rim);
+    border-radius:var(--radius-lg);padding:22px 22px 24px;margin-bottom:14px;
+    box-shadow:var(--shadow-sm);
+  }
+
+/* ── 通用欄位列 ── */
+.frow{display:grid;grid-template-columns:88px 1fr 64px;align-items:center;gap:14px;margin-bottom:14px}
 .frow:last-of-type{margin-bottom:0}
-.flbl{font-size:13px;color:#555;text-align:right}
-.frow input[type=number]{width:100%;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;color:#1a1a1a;text-align:right;-moz-appearance:textfield}
+.flbl{font-size:15px;color:var(--ink);text-align:right;font-weight:500;letter-spacing:.08em;padding-right:4px}
+.frow input[type=number]{
+    width:100%;height:50px;padding:0 20px;
+    border:1px solid var(--rim-2);border-radius:16px;
+    font-size:16px;background:var(--surface);color:var(--ink);
+    text-align:right;-moz-appearance:textfield;font-family:inherit;font-weight:600;
+    transition:all .15s;letter-spacing:.02em;
+  }
+.frow input[type=number]:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
 .frow input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
-.funit{font-size:12px;color:#aaa}
-.hint-row{grid-column:2/4;font-size:11px;color:#aaa;margin-top:-6px;margin-bottom:2px}
-.divider{border:none;border-top:0.5px solid #f0f0f0;margin:10px 0}
-.trow{display:flex;align-items:center;gap:8px}
-.trow label{font-size:12px;color:#888;white-space:nowrap}
-.trow input[type=time]{padding:6px 8px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;background:#fafafa;color:#1a1a1a}
-.now-btn{font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;border:0.5px solid #ddd;background:#fafafa;color:#555;white-space:nowrap}
-.add-btn{width:100%;padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;background:#185FA5;color:white;border:none;letter-spacing:0.02em}
-.add-btn:active{opacity:0.82}
-.rec-list{display:flex;flex-direction:column;gap:7px}
-.rec-in{background:#EBF3FC;border-radius:12px;padding:11px 13px;border:0.5px solid #B5D4F4;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.rec-out{background:#FEF0F0;border-radius:12px;padding:11px 13px;border:0.5px solid #FACACA;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.rec-vt{background:#F5F5F7;border-radius:12px;padding:11px 13px;border:0.5px solid #E5E5E5;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.rec-left{flex-shrink:0;min-width:52px}
-.rec-time{font-size:13px;font-weight:600;color:#1a1a1a;white-space:nowrap}
-.rec-cg{font-size:11px;color:#888;margin-top:2px}
+.funit{font-size:13px;color:var(--muted);font-weight:500;text-align:left;letter-spacing:.02em;margin-left:-4px}
+
+/* ── 分隔線 ── */
+.divider{border:none;border-top:1px solid var(--rim);margin:18px 0 16px}
+.alert-divider{border:none;border-top:1px dashed rgba(0,0,0,.12);margin:8px 0}
+
+/* ── 時間列：時間 input 縮短，現在按鈕右緣 = 牛奶 input 右緣 ── */
+.trow{
+    display:grid;grid-template-columns:88px 1fr 72px 64px;
+    align-items:center;gap:14px;margin-bottom:12px;
+  }
+.trow-pad{display:block}
+.trow label{
+    font-size:15px;color:var(--ink);font-weight:500;
+    text-align:right;letter-spacing:.08em;padding-right:4px;
+  }
+.time-input,
+  .trow input[type=text],
+  .trow input[type=time]{
+    width:100%;height:50px;padding:0 20px;
+    border:1px solid var(--rim-2);border-radius:16px;
+    font-size:16px;background:var(--surface);color:var(--ink);
+    font-family:inherit;font-weight:600;
+    cursor:pointer;text-align:center;letter-spacing:.04em;
+    transition:all .15s;
+  }
+.time-input:focus,.trow input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.now-btn{
+    height:50px;padding:0;width:100%;font-size:14px;border-radius:16px;cursor:pointer;
+    border:1px solid var(--rim-2);background:var(--brand-tint);
+    color:var(--brand-deep);white-space:nowrap;font-family:inherit;font-weight:700;
+    letter-spacing:.04em;transition:all .15s;
+  }
+  .now-btn:hover{background:var(--brand-soft)}
+.now-btn:active{transform:scale(.96)}
+
+/* ── 主要按鈕 ── */
+.add-btn{
+  width:100%;height:50px;border-radius:14px;
+  font-size:15.5px;font-weight:700;cursor:pointer;margin-top:12px;
+  background:var(--brand);color:#fff;border:none;
+  letter-spacing:.06em;font-family:inherit;
+  box-shadow:0 6px 16px -8px rgba(74,143,107,.5);
+  transition:transform .1s, background .15s;
+}
+.add-btn:hover{background:var(--brand-deep)}
+.add-btn:active{transform:translateY(1px)}
+
+/* ── 記錄列表 ── */
+.rec-list{display:flex;flex-direction:column;gap:9px}
+.rec-in,.rec-out,.rec-vt{
+  border-radius:14px;padding:13px 15px 13px 18px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  background:var(--surface);border:1px solid var(--rim);
+  box-shadow:var(--shadow-xs);position:relative;
+}
+.rec-in::before,.rec-out::before,.rec-vt::before{
+  content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;
+}
+.rec-in{background:linear-gradient(180deg,#fff,#f4f7fa 100%);border-color:#dce6ee}
+.rec-out{background:linear-gradient(180deg,#fff,#fbf5ea 100%);border-color:#eadfc7}
+.rec-vt{background:linear-gradient(180deg,#fff,#f5f3ea 100%);border-color:#e5e0cc}
+.rec-in::before{background:#3E6B8A}
+.rec-out::before{background:#B08248}
+.rec-vt::before{background:#9e967b}
+.rec-in .rec-time{color:#264a65}
+.rec-out .rec-time{color:#7a5723}
+.rec-in .rv-val,.rec-out .rv-val,.rec-vt .rv-val{color:inherit}
+.rec-in .rv-sub{color:#3E6B8A}
+.rec-out .rv-lbl,.rec-in .rv-lbl{color:inherit;opacity:.65}
+
+.rec-left{flex-shrink:0;min-width:58px}
+.rec-time{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;letter-spacing:.02em}
+.rec-cg{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
 .rec-right{flex:1;text-align:right}
-.rec-del{color:#ff3b30;cursor:pointer;font-size:20px;line-height:1;padding:0 2px;flex-shrink:0;margin-top:-2px;opacity:0.7}
-.rv-row{display:flex;justify-content:flex-end;align-items:baseline;gap:5px;line-height:1.9}
-.rv-pair{display:flex;align-items:baseline;gap:2px}
-.rv-lbl{font-size:11px;color:#888;white-space:nowrap}
-.rv-val{font-size:14px;font-weight:600;color:#1a1a1a;white-space:nowrap}
-.rv-val.alert{color:#ff3b30}
-.rv-unit{font-size:11px;color:#aaa;white-space:nowrap}
-.rv-sep{font-size:11px;color:#ccc}
-.rv-sub{font-size:11px;color:#185FA5;margin-top:2px;text-align:right}
-.subtotal{background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:12px 14px;margin-top:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.subtotal-title{font-size:11px;font-weight:600;color:#999;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em}
-.st-row{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.st-item{font-size:13px;color:#1a1a1a}
-.st-item small{font-size:11px;color:#aaa}
-.st-diff{grid-column:1/-1;font-size:13px;font-weight:600;margin-top:6px;padding-top:6px;border-top:0.5px solid #f0f0f0}
-.diff-pos{color:#ff3b30}
-.diff-neg{color:#34c759}
-.sum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
-.sum-card{background:#f5f5f7;border-radius:10px;padding:11px 13px}
-.sum-card .sl{font-size:11px;color:#888;margin-bottom:3px}
-.sum-card .sv{font-size:20px;font-weight:600;color:#1a1a1a}
-.sum-card .su{font-size:11px;color:#aaa}
+.rec-del{
+  color:var(--muted);cursor:pointer;font-size:20px;line-height:1;
+  padding:2px 6px;flex-shrink:0;margin-top:-2px;
+  border-radius:8px;transition:all .15s;
+}
+.rec-del:active{background:var(--danger-soft);color:var(--danger)}
+
+.rv-row{display:flex;justify-content:flex-end;align-items:baseline;gap:6px;line-height:1.9;flex-wrap:wrap}
+.rv-pair{display:flex;align-items:baseline;gap:3px}
+.rv-lbl{font-size:11.5px;color:var(--muted);white-space:nowrap;font-weight:600}
+.rv-val{font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rv-val.alert{color:var(--danger)}
+.rv-unit{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.rv-sep{font-size:11px;color:var(--rim-2)}
+.rv-sub{font-size:11.5px;color:var(--brand-deep);margin-top:3px;text-align:right;font-weight:600}
+
+/* ── 小計 ── */
+.subtotal{
+  background:var(--brand-tint);border:1px solid var(--rim);
+  border-radius:var(--radius);padding:14px 16px;margin-top:12px;
+}
+.subtotal-title{font-size:12px;font-weight:700;color:var(--brand-deep);margin-bottom:10px;letter-spacing:.06em}
+.st-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.st-item{font-size:13px;color:var(--ink);padding:12px 14px;border-radius:12px;background:#fff;border:1px solid var(--rim)}
+.st-item strong{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--brand-deep)}
+.st-item small{font-size:11.5px;color:var(--muted);font-weight:600}
+.st-diff{
+  grid-column:1/-1;font-size:14px;font-weight:700;margin-top:8px;
+  padding:11px 14px;border-radius:12px;background:#fff;text-align:center;border:1px solid var(--rim);
+}
+.diff-pos{color:var(--brand-deep)}
+.diff-neg{color:var(--danger)}
+
+/* ── 統計卡 ── */
+.sum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.sum-card{
+  background:var(--surface);border:1px solid var(--rim);
+  border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-xs);
+}
+.sum-card .sl{font-size:11.5px;color:var(--muted);margin-bottom:6px;font-weight:700;letter-spacing:.06em}
+.sum-card .sv{font-size:24px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.sum-card .su{font-size:12px;color:var(--muted);font-weight:600}
+.sum-card.full-col{grid-column:1/-1;background:var(--brand-tint);border-color:var(--rim-2)}
 .full-col{grid-column:1/-1}
-.alert-box{border-radius:14px;padding:13px 14px;margin-bottom:14px;border:0.5px solid}
-.alert-ok{background:#F0FDF4;border-color:#86EFAC}
-.alert-ok .at{color:#166534;font-size:13px;font-weight:600;margin-bottom:4px}
-.alert-ok .ab{color:#166534;font-size:13px;line-height:1.7}
-.alert-warn{background:#FFFBEB;border-color:#FCD34D}
-.alert-warn .at{color:#92400E;font-size:13px;font-weight:600;margin-bottom:4px}
-.alert-warn .ab{color:#92400E;font-size:13px;line-height:1.7}
-.alert-danger{background:#FEF2F2;border-color:#FCA5A5}
-.alert-danger .at{color:#991B1B;font-size:13px;font-weight:600;margin-bottom:4px}
-.alert-danger .ab{color:#991B1B;font-size:13px;line-height:1.7}
-.alert-divider{border:none;border-top:0.5px solid rgba(0,0,0,0.08);margin:7px 0}
-.chart-tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-.ct{padding:5px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid #ddd;background:#fafafa;color:#666}
-.ct.active{background:#185FA5;color:white;border-color:#185FA5}
-.ct.range-active{background:#3a3a3c;color:white;border-color:#3a3a3c}
-.date-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.date-nav button{padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;border:0.5px solid #ddd;background:#fafafa;color:#1a1a1a}
-.date-nav span{flex:1;text-align:center;font-size:13px;font-weight:600;color:#1a1a1a}
-.export-btn{width:100%;padding:11px;border-radius:10px;font-size:13px;cursor:pointer;margin-top:12px;border:0.5px solid #ddd;background:#fafafa;color:#1a1a1a;font-weight:500}
-.empty{text-align:center;padding:28px 0;color:#aaa;font-size:13px}
 
-.time-modal{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-radius:18px 18px 0 0;padding:20px 16px 32px;box-shadow:0 -4px 24px rgba(0,0,0,0.12);z-index:200}
-.time-modal h4{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:16px;text-align:center}
-.time-ampm-row{display:flex;gap:8px;margin-bottom:14px}
-.time-ampm-btn{flex:1;padding:12px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:0.5px solid #ddd;background:#fafafa;color:#555}
-.time-ampm-btn.sel-active{background:#185FA5;color:white;border-color:#185FA5}
-.time-hm-row{display:flex;align-items:center;gap:10px;margin-bottom:20px}
-.time-hm-row input{flex:1;padding:12px;border:0.5px solid #ddd;border-radius:10px;font-size:22px;font-weight:600;text-align:center;background:#fafafa;color:#1a1a1a}
-.time-hm-row span{font-size:22px;font-weight:600;color:#aaa}
-.time-modal .time-ok{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;background:#185FA5;color:white;border:none}
-.time-modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:199}
-.loading{text-align:center;padding:40px 0;color:#aaa;font-size:13px}
-.sel-btn{flex:1;padding:8px 4px;border-radius:8px;font-size:13px;cursor:pointer;border:0.5px solid #ddd;background:#fafafa;color:#555;transition:all 0.15s}
-.sel-btn.selected{background:#185FA5;color:white;border-color:#185FA5;font-weight:600}
-.ampm-btn{padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer;border:0.5px solid #ddd;background:#f0f0f0;color:#555;font-weight:500;white-space:nowrap;min-width:44px}
-.ampm-btn.pm{background:#e8f0fb;color:#185FA5;border-color:#B5D4F4}
+/* ── 提醒 ── */
+.alert-box{border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;border:1px solid}
+.alert-ok{background:var(--ok-soft);border-color:#c7e0d1}
+.alert-ok .at{color:var(--brand-deep);font-size:13.5px;font-weight:700;margin-bottom:5px;letter-spacing:.02em}
+.alert-ok .ab{color:var(--brand-deep);font-size:13px;line-height:1.7}
+.alert-warn{background:var(--warn-soft);border-color:#ecd29d}
+.alert-warn .at{color:#7a4f11;font-size:13.5px;font-weight:700;margin-bottom:5px}
+.alert-warn .ab{color:#7a4f11;font-size:13px;line-height:1.7}
+.alert-danger{background:var(--danger-soft);border-color:#efc1b2}
+.alert-danger .at{color:#7a2a1a;font-size:13.5px;font-weight:700;margin-bottom:5px}
+.alert-danger .ab{color:#7a2a1a;font-size:13px;line-height:1.7}
 
-/* Modal */
-.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
-.modal-box{background:#fff;border-radius:18px;padding:22px;width:100%;max-width:320px}
-.modal-box h3{font-size:16px;font-weight:600;margin-bottom:14px;color:#1a1a1a}
-.modal-box input[type=text]{width:100%;padding:10px;border:0.5px solid #ddd;border-radius:10px;font-size:15px;margin-bottom:10px;background:#fafafa;color:#1a1a1a}
-.qnames{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
-.qn{padding:7px 16px;border-radius:20px;font-size:14px;cursor:pointer;border:0.5px solid #ddd;background:#fafafa;color:#1a1a1a}
-.qn:active{background:#185FA5;color:white;border-color:#185FA5}
-.modal-ok{width:100%;padding:11px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;background:#185FA5;color:white;border:none}
-.toast-title{font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:10px}
-.toast-body{font-size:13px;color:#555;line-height:1.8;margin-bottom:16px}
-.toast-ok{width:100%;padding:11px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;background:#185FA5;color:white;border:none}
-.confirm-title{font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:8px}
-.confirm-body{font-size:13px;color:#666;margin-bottom:18px;line-height:1.6}
-.confirm-btns{display:flex;gap:8px}
-.confirm-btns .c-cancel{flex:1;padding:10px;border-radius:10px;font-size:14px;cursor:pointer;border:0.5px solid #ddd;background:#fafafa;color:#1a1a1a}
-.confirm-btns .c-del{flex:1;padding:10px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:#ff3b30;color:white;border:none}
+/* ── 圖表分頁 ── */
+.chart-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.ct{
+  padding:8px 14px;border-radius:999px;font-size:13px;cursor:pointer;
+  border:1px solid var(--rim-2);background:var(--surface);color:var(--ink-2);
+  font-family:inherit;font-weight:600;transition:all .15s;
+}
+.ct.active{background:var(--brand);color:#fff;border-color:transparent;box-shadow:0 4px 10px -4px rgba(74,143,107,.4)}
+.ct.range-active{background:var(--ink);color:#fff;border-color:transparent}
+.ct:active{transform:scale(.96)}
+
+.date-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.date-nav button{
+  padding:9px 14px;border-radius:12px;cursor:pointer;font-size:13px;
+  border:1px solid var(--rim-2);background:var(--surface);color:var(--ink);
+  font-family:inherit;font-weight:600;
+}
+.date-nav span{flex:1;text-align:center;font-size:14px;font-weight:700;color:var(--ink)}
+.date-nav button:disabled{opacity:.4;cursor:default}
+
+.export-btn{
+  width:100%;height:48px;border-radius:14px;font-size:14px;cursor:pointer;
+  margin-top:14px;border:1px solid var(--rim-2);
+  background:var(--surface);color:var(--ink);font-weight:700;font-family:inherit;
+}
+.export-btn:active{transform:translateY(1px)}
+
+.empty{text-align:center;padding:28px 0;color:var(--muted);font-size:13px;font-weight:500}
+
+/* ── Modal ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(20,40,30,.38);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
+}
+.modal-box{
+  background:var(--surface);border-radius:22px;padding:24px;
+  width:100%;max-width:340px;
+  box-shadow:0 30px 60px -24px rgba(0,0,0,.3), 0 0 0 1px var(--rim);
+}
+.modal-box h3{font-size:17px;font-weight:700;margin-bottom:14px;color:var(--ink)}
+.modal-box input[type=text]{
+  width:100%;height:46px;padding:0 14px;border:1px solid var(--rim-2);border-radius:12px;
+  font-size:16px;margin-bottom:12px;background:var(--surface-2);color:var(--ink);
+  font-family:inherit;font-weight:500;
+}
+.modal-box input[type=text]:focus{outline:none;border-color:var(--brand);background:#fff}
+.qnames{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.qn{
+  padding:9px 18px;border-radius:999px;font-size:14px;cursor:pointer;
+  border:1px solid var(--rim-2);background:var(--surface-2);color:var(--ink);
+  font-family:inherit;font-weight:600;
+}
+.qn:active{background:var(--brand);color:#fff;border-color:transparent}
+.modal-ok{
+  width:100%;height:48px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;
+  background:var(--brand);color:#fff;border:none;font-family:inherit;
+  box-shadow:0 4px 12px -4px rgba(74,143,107,.4);
+}
+.toast-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.toast-body{font-size:13.5px;color:var(--ink-2);line-height:1.9;margin-bottom:18px}
+.toast-ok{
+  width:100%;height:48px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;
+  background:var(--brand);color:#fff;border:none;font-family:inherit;
+}
+.confirm-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.confirm-body{font-size:13.5px;color:var(--ink-2);margin-bottom:20px;line-height:1.7}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btns .c-cancel{
+  flex:1;height:46px;border-radius:12px;font-size:14px;cursor:pointer;
+  border:1px solid var(--rim-2);background:var(--surface-2);color:var(--ink);
+  font-family:inherit;font-weight:600;
+}
+.confirm-btns .c-del{
+  flex:1;height:46px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;
+  background:var(--danger);color:#fff;border:none;font-family:inherit;
+  box-shadow:0 4px 12px -4px rgba(192,85,63,.4);
+}
+
+/* ── 時間選擇器 Modal ── */
+.time-modal{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;background:var(--surface);
+  border-radius:24px 24px 0 0;padding:24px 20px 36px;
+  box-shadow:0 -10px 40px rgba(20,40,30,.15);z-index:200;
+  border-top:1px solid var(--rim);
+}
+.time-modal h4{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:20px;text-align:center;letter-spacing:.04em}
+.time-ampm-row{display:flex;gap:10px;margin-bottom:18px}
+.time-ampm-btn{
+  flex:1;height:52px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;
+  border:1px solid var(--rim-2);background:var(--surface-2);color:var(--ink-2);
+  font-family:inherit;letter-spacing:.04em;
+}
+.time-ampm-btn.sel-active{
+  background:var(--brand);color:#fff;border-color:transparent;
+  box-shadow:0 4px 12px -4px rgba(74,143,107,.45);
+}
+.time-hm-row{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.time-hm-row input{
+  flex:1;height:64px;padding:0 14px;border:1px solid var(--rim-2);border-radius:14px;
+  font-size:30px;font-weight:700;text-align:center;
+  background:var(--surface-2);color:var(--ink);
+  font-family:inherit;font-variant-numeric:tabular-nums;
+  -moz-appearance:textfield;
+}
+.time-hm-row input::-webkit-inner-spin-button,
+.time-hm-row input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.time-hm-row input:focus{outline:none;border-color:var(--brand);background:#fff}
+.time-hm-row span{font-size:30px;font-weight:700;color:var(--muted)}
+.time-modal .time-ok{
+  width:100%;height:50px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;
+  background:var(--brand);color:#fff;border:none;font-family:inherit;letter-spacing:.06em;
+  box-shadow:0 6px 16px -8px rgba(74,143,107,.5);
+}
+.time-modal-bg{position:fixed;inset:0;background:rgba(20,40,30,.38);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:199}
+
+.loading{text-align:center;padding:48px 0;color:var(--muted);font-size:14px;font-weight:500}
+
+/* ── 大便選項：方案 2（獨立 pill 按鈕，無灰底容器） ── */
+.stool-row{display:grid;grid-template-columns:88px 1fr 64px;align-items:center;gap:14px;margin-bottom:14px}
+.stool-row .flbl{grid-row:1/3;align-self:center}
+.stool-row .stool-stack{grid-column:2/3;display:flex;flex-direction:column;gap:10px}
+.stool-seg{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.stool-seg .sel-btn{
+  height:44px;border:1px solid var(--rim-2);background:var(--surface);
+  border-radius:12px;font-size:15px;color:var(--ink-2);font-weight:600;cursor:pointer;
+  font-family:inherit;letter-spacing:.04em;transition:all .15s;
+}
+.stool-seg .sel-btn.selected{
+  background:var(--brand);color:#fff;border-color:transparent;font-weight:700;
+  box-shadow:0 4px 10px -4px rgba(74,143,107,.4);
+}
+.sel-btn{
+    height:50px;border-radius:16px;font-size:15px;cursor:pointer;
+    border:1px solid var(--rim-2);background:var(--surface);color:var(--ink-2);
+    font-family:inherit;font-weight:600;transition:all .15s;letter-spacing:.04em;
+  }
+.sel-btn.selected{
+  background:var(--brand);color:#fff;border-color:transparent;font-weight:700;
+  box-shadow:0 4px 12px -4px rgba(74,143,107,.45);
+}
+.sel-btn:active{transform:scale(.97)}
+
+.ampm-btn{
+  height:44px;padding:0 14px;border-radius:12px;font-size:13px;cursor:pointer;
+  border:1px solid var(--rim-2);background:var(--surface-2);color:var(--ink-2);
+  font-weight:700;white-space:nowrap;min-width:56px;font-family:inherit;letter-spacing:.04em;
+}
+.ampm-btn.pm{background:var(--brand-soft);color:var(--brand-deep);border-color:var(--rim-2)}
 </style>
 </head>
 <body>
@@ -285,9 +565,9 @@ window.openTimePicker=function(id){
       '<button class="time-ampm-btn'+(!isAm?' sel-active':'')+'" id="tp-pm" onclick="window._tpSetAm(false)">'+t('下午')+'</button>'+
     '</div>'+
     '<div class="time-hm-row">'+
-      '<input type="number" id="tp-h" min="1" max="12" value="'+h12+'" style="flex:1;padding:12px;border:0.5px solid #ddd;border-radius:10px;font-size:22px;font-weight:600;text-align:center;background:#fafafa;color:#1a1a1a"/>'+
-      '<span style="font-size:22px;font-weight:600;color:#aaa">:</span>'+
-      '<input type="number" id="tp-m" min="0" max="59" value="'+String(m).padStart(2,'0')+'" style="flex:1;padding:12px;border:0.5px solid #ddd;border-radius:10px;font-size:22px;font-weight:600;text-align:center;background:#fafafa;color:#1a1a1a"/>'+
+      '<input type="number" id="tp-h" min="1" max="12" value="'+h12+'"/>'+
+      '<span>:</span>'+
+      '<input type="number" id="tp-m" min="0" max="59" value="'+String(m).padStart(2,'0')+'"/>'+
     '</div>'+
     '<button class="time-ok" onclick="window._tpConfirm(\''+id+'\')">'+t('確認')+'</button>';
   window._tpIsAm=isAm;
@@ -541,27 +821,29 @@ function renderIO(){
     <div class="frow"><span class="flbl">${t('牛奶')}</span><input type="number" id="milk" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <div class="frow"><span class="flbl">${t('藥＋水')}</span><input type="number" id="mw" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" id="iit-display" readonly onclick="window.openTimePicker('iit')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${fmt12(nt())}"/><input type="hidden" id="iit" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iit')">${t('現在')}</button></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="iit-display" readonly onclick="window.openTimePicker('iit')" value="${fmt12(nt())}"/><input type="hidden" id="iit" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iit')">${t('現在')}</button><span class="trow-pad"></span></div>
     <button class="add-btn" onclick="window.addIn()">${t('新增輸入')}</button>
   </div>
   <div class="sec">輸出</div>
   <div class="fcard">
     <div class="frow"><span class="flbl">${t('尿液')}</span><input type="number" id="urine" placeholder="0" min="0"/><span class="funit">cc</span></div>
-    <div style="margin-bottom:10px">
-      <div style="font-size:13px;color:#555;margin-bottom:7px">${t('大便')}</div>
-      <div style="display:flex;gap:6px;margin-bottom:6px" id="stool-qty-row">
-        <button type="button" class="sel-btn" id="sq-多" onclick="selStool('qty','多')">${t('多')}</button>
-        <button type="button" class="sel-btn" id="sq-中" onclick="selStool('qty','中')">${t('中')}</button>
-        <button type="button" class="sel-btn" id="sq-少" onclick="selStool('qty','少')">${t('少')}</button>
-      </div>
-      <div style="display:flex;gap:6px" id="stool-type-row">
-        <button type="button" class="sel-btn" id="st-成形" onclick="selStool('type','成形')">${t('成形')}</button>
-        <button type="button" class="sel-btn" id="st-軟便" onclick="selStool('type','軟便')">${t('軟便')}</button>
-        <button type="button" class="sel-btn" id="st-水便" onclick="selStool('type','水便')">${t('水便')}</button>
+    <div class="stool-row">
+      <span class="flbl">${t('大便')}</span>
+      <div class="stool-stack">
+        <div class="stool-seg" id="stool-qty-row">
+          <button type="button" class="sel-btn" id="sq-多" onclick="selStool('qty','多')">${t('多')}</button>
+          <button type="button" class="sel-btn" id="sq-中" onclick="selStool('qty','中')">${t('中')}</button>
+          <button type="button" class="sel-btn" id="sq-少" onclick="selStool('qty','少')">${t('少')}</button>
+        </div>
+        <div class="stool-seg" id="stool-type-row">
+          <button type="button" class="sel-btn" id="st-成形" onclick="selStool('type','成形')">${t('成形')}</button>
+          <button type="button" class="sel-btn" id="st-軟便" onclick="selStool('type','軟便')">${t('軟便')}</button>
+          <button type="button" class="sel-btn" id="st-水便" onclick="selStool('type','水便')">${t('水便')}</button>
+        </div>
       </div>
     </div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" id="iot-display" readonly onclick="window.openTimePicker('iot')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${fmt12(nt())}"/><input type="hidden" id="iot" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iot')">${t('現在')}</button></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="iot-display" readonly onclick="window.openTimePicker('iot')" value="${fmt12(nt())}"/><input type="hidden" id="iot" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iot')">${t('現在')}</button><span class="trow-pad"></span></div>
     <button class="add-btn" onclick="window.addOut()">${t('新增輸出')}</button>
   </div>
   <div class="sec">今日記錄</div>
@@ -635,7 +917,7 @@ function renderVT(){
     <div class="frow"><span class="flbl">${t('低壓')}</span><input type="number" id="dbp" placeholder="80"/><span class="funit">mmHg</span></div>
     <div class="frow"><span class="flbl">${t('脈搏')}</span><input type="number" id="pulse" placeholder="72"/><span class="funit">次/分</span></div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" id="vt-display" readonly onclick="window.openTimePicker('vt')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${fmt12(nt())}"/><input type="hidden" id="vt" value="${nt()}"/><button class="now-btn" onclick="window.setNow('vt')">${t('現在')}</button></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="vt-display" readonly onclick="window.openTimePicker('vt')" value="${fmt12(nt())}"/><input type="hidden" id="vt" value="${nt()}"/><button class="now-btn" onclick="window.setNow('vt')">${t('現在')}</button><span class="trow-pad"></span></div>
     <button class="add-btn" onclick="window.addVT()">${t('新增生理記錄')}</button>
   </div>
   <div class="sec">今日記錄</div>
@@ -883,15 +1165,15 @@ window.exportReport=function(){
   const{inW,outW,diff}=calcTotals(cyc);
   const div=document.createElement('div');
   div.style.cssText='position:absolute;left:-9999px;top:0;width:440px;background:white;padding:28px;font-family:-apple-system,sans-serif;font-size:13px;color:#222';
-  div.innerHTML=`<div style="font-size:20px;font-weight:700;margin-bottom:2px;color:#185FA5">星辰護理日誌</div>
+  div.innerHTML=`<div style="font-size:20px;font-weight:700;margin-bottom:2px;color:#377054">星辰護理日誌</div>
   <div style="font-size:13px;color:#888;margin-bottom:20px">每日報告　${today}　產生時間：${now.toLocaleTimeString('zh-TW')}</div>
-  <div style="margin-bottom:14px;padding:13px;background:#F0FDF4;border-radius:10px;border:0.5px solid #86EFAC">
-    <div style="font-weight:600;margin-bottom:5px;color:#166534">尿液監測</div>
-    <div style="color:#166534">${ua.label}　已 ${ua.hrs} 小時 ${ua.mins} 分</div>
-    <div style="color:#166534">此段時間輸入水分：${ua.inAfter} cc</div>
-    ${ua.sRecs.map(r=>`<div style="color:#166534">排便：${r.time}　${r.stool} g</div>`).join('')}
+  <div style="margin-bottom:14px;padding:13px;background:#f5ecda;border-radius:12px;border:1px solid rgba(90,60,30,.12)">
+    <div style="font-weight:600;margin-bottom:5px;color:#33271a">尿液監測</div>
+    <div style="color:#33271a">${ua.label}　已 ${ua.hrs} 小時 ${ua.mins} 分</div>
+    <div style="color:#33271a">此段時間輸入水分：${ua.inAfter} cc</div>
+    ${ua.sRecs.map(r=>`<div style="color:#33271a">排便：${r.time}　${r.stool} g</div>`).join('')}
   </div>
-  <div style="margin-bottom:14px;padding:13px;background:#f5f5f7;border-radius:10px">
+  <div style="margin-bottom:14px;padding:13px;background:#f5ecda;border-radius:10px">
     <div style="font-weight:600;margin-bottom:5px">當日週期水分（07:00 起算）</div>
     <div>輸入水分：${inW} cc　　輸出（尿液）：${outW} cc　　差額：${diff>0?'+':''}${diff} cc</div>
   </div>

@@ -1003,7 +1003,7 @@ function buildStoolAlert(){
     const dStr=r.date===dk()?'':r.date.slice(5)+' ';
     return `<div class="ab">${dStr}${r.time}　${r.stool}</div>`;
   }).join('');
-  return `<div class="alert-box ${aC}" style="margin-bottom:14px">
+  return `<div class="alert-box ${aC}" style="margin-bottom:24px">
     <div class="at">${aI}解便紀錄</div>
     <div class="ab">${si.label}</div>
     ${si.lastTwo.length?`<hr class="alert-divider"/><div class="ab" style="font-size:11px;opacity:0.8;margin-bottom:3px">最近兩次：</div>${lastTwoHTML}`:''}

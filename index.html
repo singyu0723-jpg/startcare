@@ -306,7 +306,7 @@ window.openTimePicker=function(id){
     const he=document.getElementById(targetId);
     const de=document.getElementById(targetId+'-display');
     if(he)he.value=timeStr;
-    if(de)de.value=timeStr;
+    if(de)de.value=fmt12(timeStr);
     bg.remove();modal.remove();
   };
   document.body.appendChild(bg);
@@ -314,12 +314,11 @@ window.openTimePicker=function(id){
 };
 
 window.setNow=function(id){
-  const now=new Date();
-  const h=now.getHours(),m=now.getMinutes();
-  const input=document.getElementById(id);
-  if(input) input.value=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
-  const btn=document.getElementById(id+'-ampm');
-  if(btn){btn.textContent=h<12?'AM':'PM';btn.className='ampm-btn'+(h>=12?' pm':'');}
+  const now=new Date().toTimeString().slice(0,5);
+  const hidden=document.getElementById(id);
+  const display=document.getElementById(id+'-display');
+  if(hidden) hidden.value=now;
+  if(display) display.value=fmt12(now);
 };
 // 更新 ampm 按鈕顯示（時間欄手動輸入時也要更新）
 function updateAmPmBtn(id){
@@ -336,6 +335,22 @@ const MW=0.8;
 const milkW=ml=>Math.round(ml*MW);
 const dk=(d)=>{const t=d||new Date();return`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`};
 const nt=()=>new Date().toTimeString().slice(0,5);
+function fmt12(val24){
+  if(!val24) return '';
+  const [hh,mm]=val24.split(':');
+  let h=parseInt(hh),m=parseInt(mm)||0;
+  const ampm=h<12?t('上午'):t('下午');
+  if(h===0)h=12; else if(h>12)h-=12;
+  return ampm+' '+h+':'+(m<10?'0':'')+m;
+}
+function dkFmt(dateStr){
+  // 把 "2026-04-22" 轉成 "04/22 (三)"
+  if(!dateStr) return '';
+  const [y,mo,d]=dateStr.split('-');
+  const dt=new Date(parseInt(y),parseInt(mo)-1,parseInt(d));
+  const wdays=['日','一','二','三','四','五','六'];
+  return mo+'/'+d+' ('+wdays[dt.getDay()]+')';
+}
 function cycleStart(){const n=new Date(),s=new Date(n);if(n.getHours()<7)s.setDate(s.getDate()-1);s.setHours(7,0,0,0);return s;}
 function r2d(r){const[h,m]=r.time.split(':');const[y,mo,d]=r.date.split('-');return new Date(y,mo-1,d,h,m);}
 function sortT(arr){return[...arr].sort((a,b)=>r2d(a)-r2d(b));}
@@ -526,7 +541,7 @@ function renderIO(){
     <div class="frow"><span class="flbl">${t('牛奶')}</span><input type="number" id="milk" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <div class="frow"><span class="flbl">${t('藥＋水')}</span><input type="number" id="mw" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" id="iit-display" readonly onclick="window.openTimePicker('iit')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${nt()}"/><input type="hidden" id="iit" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iit')">${t('現在')}</button></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" id="iit-display" readonly onclick="window.openTimePicker('iit')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${fmt12(nt())}"/><input type="hidden" id="iit" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iit')">${t('現在')}</button></div>
     <button class="add-btn" onclick="window.addIn()">${t('新增輸入')}</button>
   </div>
   <div class="sec">輸出</div>
@@ -546,7 +561,7 @@ function renderIO(){
       </div>
     </div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" id="iot-display" readonly onclick="window.openTimePicker('iot')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${nt()}"/><input type="hidden" id="iot" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iot')">${t('現在')}</button></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" id="iot-display" readonly onclick="window.openTimePicker('iot')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${fmt12(nt())}"/><input type="hidden" id="iot" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iot')">${t('現在')}</button></div>
     <button class="add-btn" onclick="window.addOut()">${t('新增輸出')}</button>
   </div>
   <div class="sec">今日記錄</div>
@@ -620,7 +635,7 @@ function renderVT(){
     <div class="frow"><span class="flbl">${t('低壓')}</span><input type="number" id="dbp" placeholder="80"/><span class="funit">mmHg</span></div>
     <div class="frow"><span class="flbl">${t('脈搏')}</span><input type="number" id="pulse" placeholder="72"/><span class="funit">次/分</span></div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" id="vt-display" readonly onclick="window.openTimePicker('vt')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${nt()}"/><input type="hidden" id="vt" value="${nt()}"/><button class="now-btn" onclick="window.setNow('vt')">${t('現在')}</button></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" id="vt-display" readonly onclick="window.openTimePicker('vt')" style="flex:1;padding:8px 10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;cursor:pointer;text-align:center" value="${fmt12(nt())}"/><input type="hidden" id="vt" value="${nt()}"/><button class="now-btn" onclick="window.setNow('vt')">${t('現在')}</button></div>
     <button class="add-btn" onclick="window.addVT()">${t('新增生理記錄')}</button>
   </div>
   <div class="sec">今日記錄</div>
@@ -678,8 +693,8 @@ function getStoolInfo(){
   // 最近兩筆
   const lastTwo=allStoolRecs.slice(-2).reverse();
   // 第3天（72小時）變紅
-  // 第3天(72h)起算: 第4天(96h)橙色, 第5天(120h)紅色
-  const level=totalHrs>=96?'danger':totalHrs>=72?'warn':'ok';
+  // 超過 48 小時直接紅色警示
+  const level=totalHrs>=48?'danger':'ok';
   return{totalHrs,days,hrs,mins,label,lastTwo,level};
 }
 
@@ -761,7 +776,7 @@ function renderReview(){
   <div class="sec" style="margin-top:20px">每日詳細記錄</div>
   <div class="date-nav">
     <button onclick="window.chDate(-1)">‹ ${t('前一天')}</button>
-    <span>${isToday?t('今天')+'（'+viewDate+'）':viewDate}</span>
+    <span>${isToday?t('今天')+'（'+dkFmt(viewDate)+'）':dkFmt(viewDate)}</span>
     <button onclick="window.chDate(1)" ${isToday?'disabled style="opacity:.4;cursor:default"':''}>${t('後一天')} ›</button>
   </div>
   ${buildDayDetail()}

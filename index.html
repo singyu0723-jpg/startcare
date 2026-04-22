@@ -89,14 +89,14 @@ body{
 .sec{
   font-size:15px;font-weight:700;color:var(--ink);
   letter-spacing:.02em;
-  margin:22px 2px 12px;
+  margin:32px 2px 18px;
   display:flex;align-items:center;gap:10px;
 }
 .sec::before{
   content:'';width:4px;height:16px;border-radius:3px;
   background:var(--brand);
 }
-.sec:first-child{margin-top:6px}
+.sec:first-child{margin-top:10px}
 
 /* ── 卡片 ── */
 .fcard{
@@ -106,9 +106,9 @@ body{
   }
 
 /* ── 通用欄位列 ── */
-.frow{display:grid;grid-template-columns:88px 1fr 64px;align-items:center;gap:14px;margin-bottom:14px}
+.frow{display:grid;grid-template-columns:64px 1fr 40px;align-items:center;gap:12px;margin-bottom:12px}
 .frow:last-of-type{margin-bottom:0}
-.flbl{font-size:15px;color:var(--ink);text-align:right;font-weight:500;letter-spacing:.08em;padding-right:4px}
+.flbl{font-size:15px;color:var(--ink);text-align:right;font-weight:500;letter-spacing:.04em;padding-right:2px}
 .frow input[type=number]{
     width:100%;height:50px;padding:0 20px;
     border:1px solid var(--rim-2);border-radius:16px;
@@ -126,13 +126,13 @@ body{
 
 /* ── 時間列：時間 input 縮短，現在按鈕右緣 = 牛奶 input 右緣 ── */
 .trow{
-    display:grid;grid-template-columns:88px 1fr 72px 64px;
-    align-items:center;gap:14px;margin-bottom:12px;
+    display:grid;grid-template-columns:64px 1fr 68px 40px;
+    align-items:center;gap:12px;margin-bottom:12px;
   }
 .trow-pad{display:block}
 .trow label{
     font-size:15px;color:var(--ink);font-weight:500;
-    text-align:right;letter-spacing:.08em;padding-right:4px;
+    text-align:right;letter-spacing:.04em;padding-right:2px;
   }
 .time-input,
   .trow input[type=text],
@@ -157,7 +157,7 @@ body{
 /* ── 主要按鈕 ── */
 .add-btn{
   width:100%;height:50px;border-radius:14px;
-  font-size:15.5px;font-weight:700;cursor:pointer;margin-top:12px;
+  font-size:15.5px;font-weight:700;cursor:pointer;margin-top:22px;
   background:var(--brand);color:#fff;border:none;
   letter-spacing:.06em;font-family:inherit;
   box-shadow:0 6px 16px -8px rgba(74,143,107,.5);
@@ -227,7 +227,7 @@ body{
 .diff-neg{color:var(--danger)}
 
 /* ── 統計卡 ── */
-.sum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.sum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:24px}
 .sum-card{
   background:var(--surface);border:1px solid var(--rim);
   border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-xs);
@@ -239,7 +239,7 @@ body{
 .full-col{grid-column:1/-1}
 
 /* ── 提醒 ── */
-.alert-box{border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;border:1px solid}
+.alert-box{border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;border:1px solid}
 .alert-ok{background:var(--ok-soft);border-color:#c7e0d1}
 .alert-ok .at{color:var(--brand-deep);font-size:13.5px;font-weight:700;margin-bottom:5px;letter-spacing:.02em}
 .alert-ok .ab{color:var(--brand-deep);font-size:13px;line-height:1.7}
@@ -251,7 +251,7 @@ body{
 .alert-danger .ab{color:#7a2a1a;font-size:13px;line-height:1.7}
 
 /* ── 圖表分頁 ── */
-.chart-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.chart-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .ct{
   padding:8px 14px;border-radius:999px;font-size:13px;cursor:pointer;
   border:1px solid var(--rim-2);background:var(--surface);color:var(--ink-2);
@@ -261,7 +261,7 @@ body{
 .ct.range-active{background:var(--ink);color:#fff;border-color:transparent}
 .ct:active{transform:scale(.96)}
 
-.date-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.date-nav{display:flex;align-items:center;gap:10px;margin-bottom:20px}
 .date-nav button{
   padding:9px 14px;border-radius:12px;cursor:pointer;font-size:13px;
   border:1px solid var(--rim-2);background:var(--surface);color:var(--ink);
@@ -272,7 +272,7 @@ body{
 
 .export-btn{
   width:100%;height:48px;border-radius:14px;font-size:14px;cursor:pointer;
-  margin-top:14px;border:1px solid var(--rim-2);
+  margin-top:28px;border:1px solid var(--rim-2);
   background:var(--surface);color:var(--ink);font-weight:700;font-family:inherit;
 }
 .export-btn:active{transform:translateY(1px)}
@@ -370,7 +370,7 @@ body{
 .loading{text-align:center;padding:48px 0;color:var(--muted);font-size:14px;font-weight:500}
 
 /* ── 大便選項：方案 2（獨立 pill 按鈕，無灰底容器） ── */
-.stool-row{display:grid;grid-template-columns:88px 1fr 64px;align-items:center;gap:14px;margin-bottom:14px}
+.stool-row{display:grid;grid-template-columns:64px 1fr 40px;align-items:center;gap:12px;margin-bottom:14px}
 .stool-row .flbl{grid-row:1/3;align-self:center}
 .stool-row .stool-stack{grid-column:2/3;display:flex;flex-direction:column;gap:10px}
 .stool-seg{

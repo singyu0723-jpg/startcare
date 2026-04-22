@@ -406,6 +406,15 @@ body{
   font-weight:700;white-space:nowrap;min-width:56px;font-family:inherit;letter-spacing:.04em;
 }
 .ampm-btn.pm{background:var(--brand-soft);color:var(--brand-deep);border-color:var(--rim-2)}
+
+/* ── 生理狀態記錄：三欄並排 ── */
+.vt-cols{display:flex;align-items:center;gap:10px;justify-content:flex-end;flex:1;flex-wrap:wrap;}
+.vt-col{text-align:center;flex-shrink:0;}
+.vt-lbl{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:2px;letter-spacing:.04em;}
+.vt-val{font-size:15px;font-weight:700;color:var(--ink);}
+.vt-val.alert{color:var(--danger);}
+.vt-unit{font-size:10px;color:var(--muted);font-weight:500;}
+.vt-sep{width:1px;height:28px;background:var(--rim);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -799,16 +808,17 @@ function buildIORecHTML(r,showDel){
 
 function buildVTRecHTML(r,showDel){
   const delBtn=showDel?`<span class="rec-del" onclick="window.confirmDelVT('${r.id}')">×</span>`:'';
-  const parts=[];
-  if(r.temp!=null)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('體溫')}</span><span class="rv-val ${ac(tempAlert(r.temp))}">${r.temp}</span><span class="rv-unit">°C</span></span>`);
+  const cols=[];
+  if(r.temp!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('體溫')}</div><div class="vt-val ${ac(tempAlert(r.temp))}">${r.temp}<span class="vt-unit"> °C</span></div></div>`);
   if(r.sbp!=null&&r.dbp!=null){
-    parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('血壓')}</span><span class="rv-val ${ac(sbpAlert(r.sbp)||dbpAlert(r.dbp))}">${r.sbp}/${r.dbp}</span><span class="rv-unit">mmHg</span></span>`);
+    cols.push(`<div class="vt-col"><div class="vt-lbl">${t('血壓')}</div><div class="vt-val ${ac(sbpAlert(r.sbp)||dbpAlert(r.dbp))}">${r.sbp}/${r.dbp}<span class="vt-unit"> mmHg</span></div></div>`);
   }else{
-    if(r.sbp!=null)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('高壓')}</span><span class="rv-val ${ac(sbpAlert(r.sbp))}">${r.sbp}</span><span class="rv-unit">mmHg</span></span>`);
-    if(r.dbp!=null)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('低壓')}</span><span class="rv-val ${ac(dbpAlert(r.dbp))}">${r.dbp}</span><span class="rv-unit">mmHg</span></span>`);
+    if(r.sbp!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('高壓')}</div><div class="vt-val ${ac(sbpAlert(r.sbp))}">${r.sbp}<span class="vt-unit"> mmHg</span></div></div>`);
+    if(r.dbp!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('低壓')}</div><div class="vt-val ${ac(dbpAlert(r.dbp))}">${r.dbp}<span class="vt-unit"> mmHg</span></div></div>`);
   }
-  if(r.pulse!=null)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('脈搏')}</span><span class="rv-val ${ac(pulseAlert(r.pulse))}">${r.pulse}</span><span class="rv-unit">次/分</span></span>`);
-  return`<div class="rec-vt"><div class="rec-left"><div class="rec-time">${r.time}</div><div class="rec-cg">${r.cg||''}</div></div><div class="rec-right"><div class="rv-row">${parts.join('<span class="rv-sep">｜</span>')}</div></div>${delBtn}</div>`;
+  if(r.pulse!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('脈搏')}</div><div class="vt-val ${ac(pulseAlert(r.pulse))}">${r.pulse}<span class="vt-unit"> 次/分</span></div></div>`);
+  const sep='<div class="vt-sep"></div>';
+  return`<div class="rec-vt"><div class="rec-left"><div class="rec-time">${r.time}</div><div class="rec-cg">${r.cg||''}</div></div><div class="vt-cols">${cols.join(sep)}</div>${delBtn}</div>`;
 }
 
 // ── TAB 1 ──
@@ -1062,7 +1072,7 @@ function renderReview(){
   <div class="sec" style="margin-top:20px">每日詳細記錄</div>
   <div class="date-nav">
     <button onclick="window.chDate(-1)">‹ ${t('前一天')}</button>
-    <span>${isToday?t('今天')+'（'+dkFmt(viewDate)+'）':dkFmt(viewDate)}</span>
+    <span>${isToday?t('今天')+' '+dkFmt(viewDate):dkFmt(viewDate)}</span>
     <button onclick="window.chDate(1)" ${isToday?'disabled style="opacity:.4;cursor:default"':''}>${t('後一天')} ›</button>
   </div>
   ${buildDayDetail()}

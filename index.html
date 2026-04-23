@@ -130,8 +130,8 @@ body{
 
 /* ── 時間列：時間 input 縮短，現在按鈕右緣 = 牛奶 input 右緣 ── */
 .trow{
-    display:grid;grid-template-columns:64px 1fr 68px 40px;
-    align-items:center;gap:12px;margin-bottom:0;
+    display:grid;grid-template-columns:52px minmax(0,1fr) 60px;
+    align-items:center;gap:8px;margin-bottom:0;
   }
 .trow-pad{display:block}
 .trow label{
@@ -174,8 +174,8 @@ body{
 /* ── 記錄列表 ── */
 .rec-list{display:flex;flex-direction:column;gap:9px}
 .rec-in,.rec-out,.rec-vt{
-  border-radius:14px;padding:13px 15px 13px 18px;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  border-radius:14px;padding:13px 12px 13px 18px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
   background:var(--surface);border:1px solid var(--rim);
   box-shadow:var(--shadow-xs);position:relative;
 }
@@ -409,13 +409,13 @@ body{
 .ampm-btn.pm{background:var(--brand-soft);color:var(--brand-deep);border-color:var(--rim-2)}
 
 /* ── 生理狀態記錄：三欄並排 ── */
-.vt-cols{display:flex;align-items:center;gap:10px;justify-content:flex-end;flex:1;flex-wrap:wrap;}
+.vt-cols{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex:1;flex-wrap:nowrap;min-width:0;}
 .vt-col{text-align:center;flex-shrink:0;}
-.vt-lbl{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:2px;letter-spacing:.04em;}
-.vt-val{font-size:15px;font-weight:700;color:var(--ink);}
+.vt-lbl{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:2px;white-space:nowrap;}
+.vt-val{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;}
 .vt-val.alert{color:var(--danger);}
-.vt-unit{font-size:10px;color:var(--muted);font-weight:500;}
-.vt-sep{width:1px;height:28px;background:var(--rim);flex-shrink:0;}
+.vt-unit{font-size:10px;color:var(--muted);font-weight:500;white-space:nowrap;}
+.vt-sep{width:1px;height:24px;background:var(--rim);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -836,7 +836,7 @@ function renderIO(){
     <div class="frow"><span class="flbl">${t('牛奶')}</span><input type="number" id="milk" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <div class="frow"><span class="flbl">${t('藥＋水')}</span><input type="number" id="mw" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="iit-display" readonly onclick="window.openTimePicker('iit')" value="${fmt12(nt())}"/><input type="hidden" id="iit" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iit')">${t('現在')}</button><span class="trow-pad"></span></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="iit-display" readonly onclick="window.openTimePicker('iit')" value="${fmt12(nt())}"/><input type="hidden" id="iit" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iit')">${t('現在')}</button></div>
     <button class="add-btn" onclick="window.addIn()">${t('新增輸入')}</button>
   </div>
   <div class="sec">輸出</div>
@@ -858,7 +858,7 @@ function renderIO(){
       </div>
     </div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="iot-display" readonly onclick="window.openTimePicker('iot')" value="${fmt12(nt())}"/><input type="hidden" id="iot" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iot')">${t('現在')}</button><span class="trow-pad"></span></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="iot-display" readonly onclick="window.openTimePicker('iot')" value="${fmt12(nt())}"/><input type="hidden" id="iot" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iot')">${t('現在')}</button></div>
     <button class="add-btn" onclick="window.addOut()">${t('新增輸出')}</button>
   </div>
   <div class="sec">今日記錄</div>
@@ -932,7 +932,7 @@ function renderVT(){
     <div class="frow"><span class="flbl">${t('低壓')}</span><input type="number" id="dbp" placeholder="80"/><span class="funit">mmHg</span></div>
     <div class="frow"><span class="flbl">${t('脈搏')}</span><input type="number" id="pulse" placeholder="72"/><span class="funit">次/分</span></div>
     <hr class="divider"/>
-    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="vt-display" readonly onclick="window.openTimePicker('vt')" value="${fmt12(nt())}"/><input type="hidden" id="vt" value="${nt()}"/><button class="now-btn" onclick="window.setNow('vt')">${t('現在')}</button><span class="trow-pad"></span></div>
+    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="vt-display" readonly onclick="window.openTimePicker('vt')" value="${fmt12(nt())}"/><input type="hidden" id="vt" value="${nt()}"/><button class="now-btn" onclick="window.setNow('vt')">${t('現在')}</button></div>
     <button class="add-btn" onclick="window.addVT()">${t('新增生理記錄')}</button>
   </div>
   <div class="sec">今日記錄</div>

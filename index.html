@@ -477,7 +477,7 @@ const ZH_TW_TO_CN = {
   '今日水分小計（07:00 起算）':'今日水分小计（07:00 起算）',
   '輸入水分':'输入水分','輸出水分':'输出水分',
   '差額（輸入－輸出）':'差额（输入－输出）',
-  '量測數值':'量测数值','體溫':'体温','高壓':'高压','低壓':'低压','脈搏':'脉搏',
+  '量測數值':'量测数值','生理紀錄':'生理记录','新增量測數值':'新增量测数值','體溫':'体温','高壓':'高压','低壓':'低压','脈搏':'脉搏',
   '新增生理記錄':'新增生理记录',
   '當日週期水分總量（07:00 起算）':'当日周期水分总量（07:00 起算）',
   '輸出（尿液）':'输出（尿液）',
@@ -934,7 +934,7 @@ function renderVT(){
   const today=dk();
   const recs=sortT(vtRecs.filter(r=>r.date===today));
   C().innerHTML=`
-  <div class="sec">量測數值</div>
+  <div class="sec">生理紀錄</div>
   <div class="fcard">
     <div class="frow"><span class="flbl">${t('體溫')}</span><input type="number" inputmode="decimal" id="temp" placeholder="36.5" step="0.1"/><span class="funit">°C</span></div>
     <div class="frow"><span class="flbl">${t('高壓')}</span><input type="number" inputmode="numeric" id="sbp" placeholder="120"/><span class="funit">mmHg</span></div>
@@ -942,7 +942,7 @@ function renderVT(){
     <div class="frow"><span class="flbl">${t('脈搏')}</span><input type="number" inputmode="numeric" id="pulse" placeholder="72"/><span class="funit">次/分</span></div>
     <hr class="divider"/>
     <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="vt-display" readonly onclick="window.openTimePicker('vt')" value="${fmt12(nt())}"/><input type="hidden" id="vt" value="${nt()}"/><button class="now-btn" onclick="window.setNow('vt')">${t('現在')}</button><span class="trow-pad"></span></div>
-    <button class="add-btn" onclick="window.addVT()">${t('新增生理記錄')}</button>
+    <button class="add-btn" onclick="window.addVT()">${t('新增量測數值')}</button>
   </div>
   <div class="sec">今日記錄</div>
   <div class="rec-list">${recs.length?recs.map(r=>buildVTRecHTML(r,true)).join(''):'<div class="empty">今日尚無記錄</div>'}</div>`;

@@ -347,14 +347,14 @@ body{
 .time-modal{
   position:fixed;bottom:0;left:50%;transform:translateX(-50%);
   width:100%;max-width:480px;background:var(--surface);
-  border-radius:24px 24px 0 0;padding:24px 20px 36px;
+  border-radius:24px 24px 0 0;padding:24px 16px 36px;
   box-shadow:0 -10px 40px rgba(20,40,30,.15);z-index:200;
   border-top:1px solid var(--rim);
 }
 .time-modal h4{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:20px;text-align:center;letter-spacing:.04em}
-.time-ampm-row{display:flex;gap:10px;margin-bottom:18px}
+.time-ampm-row{display:flex;gap:8px;margin-bottom:14px}
 .time-ampm-btn{
-  flex:1;height:52px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;
+  flex:1;height:56px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;
   border:1px solid var(--rim-2);background:var(--surface-2);color:var(--ink-2);
   font-family:inherit;letter-spacing:.04em;
 }
@@ -362,10 +362,10 @@ body{
   background:var(--brand);color:#fff;border-color:transparent;
   box-shadow:0 4px 12px -4px rgba(74,143,107,.45);
 }
-.time-hm-row{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.time-hm-row{display:flex;align-items:center;gap:8px;margin-bottom:22px}
 .time-hm-row input{
-  flex:1;height:64px;padding:0 14px;border:1px solid var(--rim-2);border-radius:14px;
-  font-size:30px;font-weight:700;text-align:center;
+  flex:1;min-width:0;height:56px;padding:0 8px;border:1px solid var(--rim-2);border-radius:14px;
+  font-size:22px;font-weight:700;text-align:center;
   background:var(--surface-2);color:var(--ink);
   font-family:inherit;font-variant-numeric:tabular-nums;
   -moz-appearance:textfield;
@@ -373,7 +373,7 @@ body{
 .time-hm-row input::-webkit-inner-spin-button,
 .time-hm-row input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .time-hm-row input:focus{outline:none;border-color:var(--brand);background:#fff}
-.time-hm-row span{font-size:30px;font-weight:700;color:var(--muted)}
+.time-hm-row span{font-size:22px;font-weight:700;color:var(--muted);flex-shrink:0}
 .time-modal .time-ok{
   width:100%;height:50px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;
   background:var(--brand);color:#fff;border:none;font-family:inherit;letter-spacing:.06em;

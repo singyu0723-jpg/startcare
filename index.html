@@ -183,8 +183,8 @@ body{
 /* ── 記錄列表 ── */
 .rec-list{display:flex;flex-direction:column;gap:9px}
 .rec-in,.rec-out,.rec-vt{
-  border-radius:14px;padding:13px 15px 13px 18px;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  border-radius:14px;padding:11px 10px 11px 14px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:6px;
   background:var(--surface);border:1px solid var(--rim);
   box-shadow:var(--shadow-xs);position:relative;
 }
@@ -203,9 +203,9 @@ body{
 .rec-in .rv-sub{color:#3E6B8A}
 .rec-out .rv-lbl,.rec-in .rv-lbl{color:inherit;opacity:.65}
 
-.rec-left{flex-shrink:0;min-width:58px}
-.rec-time{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;letter-spacing:.02em}
-.rec-cg{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
+.rec-left{flex-shrink:0;min-width:48px}
+.rec-time{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;letter-spacing:.02em}
+.rec-cg{font-size:11px;color:var(--muted);margin-top:3px;font-weight:600}
 .rec-right{flex:1;text-align:right}
 .rec-del{
   color:var(--muted);cursor:pointer;font-size:20px;line-height:1;
@@ -214,14 +214,14 @@ body{
 }
 .rec-del:active{background:var(--danger-soft);color:var(--danger)}
 
-.rv-row{display:flex;justify-content:flex-end;align-items:baseline;gap:6px;line-height:1.9;flex-wrap:wrap}
-.rv-pair{display:flex;align-items:baseline;gap:3px}
-.rv-lbl{font-size:11.5px;color:var(--muted);white-space:nowrap;font-weight:600}
-.rv-val{font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rv-row{display:flex;justify-content:flex-end;align-items:baseline;gap:4px;line-height:1.9;flex-wrap:wrap}
+.rv-pair{display:flex;align-items:baseline;gap:2px}
+.rv-lbl{font-size:11px;color:var(--muted);white-space:nowrap;font-weight:600}
+.rv-val{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .rv-val.alert{color:var(--danger)}
-.rv-unit{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.rv-unit{font-size:11px;color:var(--muted);white-space:nowrap}
 .rv-sep{font-size:11px;color:var(--rim-2)}
-.rv-sub{font-size:11.5px;color:var(--brand-deep);margin-top:3px;text-align:right;font-weight:600}
+.rv-sub{font-size:11px;color:var(--brand-deep);margin-top:3px;text-align:right;font-weight:600}
 
 /* ── 小計 ── */
 .subtotal{
@@ -418,10 +418,10 @@ body{
 .ampm-btn.pm{background:var(--brand-soft);color:var(--brand-deep);border-color:var(--rim-2)}
 
 /* ── 生理狀態三欄並排 ── */
-.vt-cols{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex:1;flex-wrap:nowrap;min-width:0;}
+.vt-cols{display:flex;align-items:center;gap:5px;justify-content:flex-end;flex:1;flex-wrap:nowrap;min-width:0;overflow:hidden;}
 .vt-col{text-align:center;flex-shrink:0;}
 .vt-lbl{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:2px;white-space:nowrap;}
-.vt-val{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.vt-val{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;}
 .vt-val.alert{color:var(--danger);}
 .vt-unit{font-size:10px;color:var(--muted);font-weight:500;white-space:nowrap;}
 .vt-sep{width:1px;height:24px;background:var(--rim);flex-shrink:0;}

@@ -823,7 +823,7 @@ function buildVTRecHTML(r,showDel){
   const cols=[];
   if(r.temp!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('體溫')}</div><div class="vt-val ${ac(tempAlert(r.temp))}">${r.temp}<span class="vt-unit"> °C</span></div></div>`);
   if(r.sbp!=null&&r.dbp!=null){
-    cols.push(`<div class="vt-col"><div class="vt-lbl">${t('血壓')}</div><div class="vt-val ${ac(sbpAlert(r.sbp)||dbpAlert(r.dbp))}">${r.sbp}/${r.dbp}<span class="vt-unit"> mmHg</span></div></div>`);
+    cols.push(`<div class="vt-col"><div class="vt-lbl">${t('血壓')}</div><div class="vt-val"><span class="${ac(sbpAlert(r.sbp))}">${r.sbp}</span>/<span class="${ac(dbpAlert(r.dbp))}">${r.dbp}</span><span class="vt-unit"> mmHg</span></div></div>`);
   }else{
     if(r.sbp!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('高壓')}</div><div class="vt-val ${ac(sbpAlert(r.sbp))}">${r.sbp}<span class="vt-unit"> mmHg</span></div></div>`);
     if(r.dbp!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('低壓')}</div><div class="vt-val ${ac(dbpAlert(r.dbp))}">${r.dbp}<span class="vt-unit"> mmHg</span></div></div>`);

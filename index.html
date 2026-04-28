@@ -489,7 +489,7 @@ const ZH_TW_TO_CN = {
   '每日詳細記錄':'每日详细记录','前一天':'前一天','後一天':'后一天','今天':'今天',
   '該日無對應記錄':'该日无对应记录','匯出今日報告':'汇出今日报告',
   '尿液監測':'尿液监测','警告：':'警告：','提醒：':'提醒：','正常：':'正常：',
-  '本週期尚無排便紀錄':'本周期尚无排便记录','排便':'排便',
+  '本週期尚無排便紀錄':'本周期尚无排便记录','排便':'排便','此段時間有解便':'此段时间有解便','此段時間尚無解便':'此段时间尚无解便','距離上次解尿，有過':'距离上次解尿，有过','次解便':'次解便','自上次解尿，也尚未解便':'自上次解尿，也尚未解便',
   '尚無解尿紀錄（07:00 起算）':'尚无解尿记录（07:00 起算）',
   '距上次解尿（':'距上次解尿（',
   '此段時間輸入水分：':'此段时间输入水分：',
@@ -1030,8 +1030,6 @@ function getUA(){
   const now=new Date(),cs=cycleStart();
   // 解尿：搜尋所有歷史紀錄（跨日），找最近一次
   const allUrineRecs=sortT(ioRecs.filter(r=>r.t==='out'&&r.urine&&r2d(r)<=now));
-  // 排便：只看當日週期
-  const sRecs=sortT(ioRecs.filter(r=>{if(r.t!=='out'||!r.stool)return false;const rt=r2d(r);return rt>=cs&&rt<=now;}));
   let lastT=null,sinceMs=0,label='';
   if(!allUrineRecs.length){
     lastT=cs; sinceMs=now-cs;
@@ -1042,6 +1040,8 @@ function getUA(){
     const dateStr=lastRec.date===dk()?'':lastRec.date.slice(5)+' ';
     label=`距上次解尿（${dateStr}${lastRec.time}）`;
   }
+  // 排便：找「上次解尿之後」到現在的大便紀錄
+  const sRecs=sortT(ioRecs.filter(r=>{if(r.t!=='out'||!r.stool)return false;const rt=r2d(r);return rt>=lastT&&rt<=now;}));
   const hrs=Math.floor(sinceMs/3600000),mins=Math.floor((sinceMs%3600000)/60000);
   const inAfter=ioRecs.filter(r=>{if(r.t!=='in')return false;const rt=r2d(r);return rt>=lastT&&rt<=now;}).reduce((s,r)=>s+milkW(r.milk||0)+(r.water||0)+(r.mw||0),0);
   return{hrs,mins,inAfter,label,level:hrs>=8?'danger':hrs>=6?'warn':'ok',sRecs};
@@ -1056,8 +1056,8 @@ function renderReview(){
   const aI=ua.level==='danger'?t('警告：'):ua.level==='warn'?t('提醒：'):t('正常：');
   const isToday=viewDate===dk();
   const stoolLines=ua.sRecs.length
-    ?`<div class="ab">本週期已解便 ${ua.sRecs.length} 次</div>`
-    :`<div class="ab" style="opacity:.6">本週期尚無排便紀錄</div>`;
+    ?`<div class="ab">距離上次解尿，有過 ${ua.sRecs.length} 次解便</div>${ua.sRecs.map(r=>`<div class="ab">${r.time}　${r.stool}</div>`).join('')}`
+    :`<div class="ab" style="opacity:.6">自上次解尿，也尚未解便</div>`;
   C().innerHTML=`
   <div class="alert-box ${aC}">
     <div class="at">${aI}尿液監測</div>

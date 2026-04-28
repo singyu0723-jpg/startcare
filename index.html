@@ -497,12 +497,13 @@ const ZH_TW_TO_CN = {
   '請輸入或選擇名字':'请输入或选择名字',
   '未輸入數值':'未输入数值',
   '請填寫牛奶或藥＋水的數量後再新增。':'请填写牛奶或药＋水的数量后再新增。',
+  '請填寫牛奶、水或藥＋水的數量後再新增。':'请填写牛奶、水或药＋水的数量后再新增。',
   '請填寫尿液或大便的數量後再新增。':'请填写尿液或大便的数量后再新增。',
   '請至少填寫一項生理數值後再新增。':'请至少填写一项生理数值后再新增。',
   '已成功紀錄（輸入）':'已成功记录（输入）',
   '已成功紀錄（輸出）':'已成功记录（输出）',
   '已成功紀錄（生理狀態）':'已成功记录（生理状态）',
-  '時間：':'时间：','牛奶：':'牛奶：','藥＋水：':'药＋水：','紀錄者：':'记录者：',
+  '時間：':'时间：','牛奶：':'牛奶：','水：':'水：','藥＋水：':'药＋水：','紀錄者：':'记录者：',
   '尿液：':'尿液：','大便：':'大便：','體溫：':'体温：','血壓：':'血压：','高壓：':'高压：','低壓：':'低压：','脈搏：':'脉搏：',
   '確認刪除？':'确认删除？','取消':'取消','確認刪除':'确认删除',
   '匯出完成':'汇出完成','JPG 已下載至您的裝置。':'JPG 已下载至您的装置。',
@@ -791,7 +792,7 @@ function showConfirm(title,body,onOk){
 function calcTotals(recs){
   let inW=0,outW=0;
   recs.forEach(r=>{
-    if(r.t==='in')inW+=milkW(r.milk||0)+(r.mw||0);
+    if(r.t==='in')inW+=milkW(r.milk||0)+(r.water||0)+(r.mw||0);
     if(r.t==='out')outW+=(r.urine||0);
   });
   return{inW,outW,diff:inW-outW};
@@ -802,9 +803,10 @@ function buildIORecHTML(r,showDel){
   const delBtn=showDel?`<span class="rec-del" onclick="window.confirmDelIO('${r.id}')">×</span>`:'';
   let rightHTML='';
   if(r.t==='in'){
-    const wTotal=milkW(r.milk||0)+(r.mw||0);
+    const wTotal=milkW(r.milk||0)+(r.water||0)+(r.mw||0);
     const parts=[];
     if(r.milk)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('牛奶')}</span><span class="rv-val">${r.milk}</span><span class="rv-unit">cc</span></span>`);
+    if(r.water)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('水')}</span><span class="rv-val">${r.water}</span><span class="rv-unit">cc</span></span>`);
     if(r.mw)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('藥＋水')}</span><span class="rv-val">${r.mw}</span><span class="rv-unit">cc</span></span>`);
     rightHTML=`<div class="rv-row">${parts.join('<span class="rv-sep">｜</span>')}</div><div class="rv-sub">${t('水分')} ${wTotal} cc</div>`;
   }else{
@@ -843,6 +845,7 @@ function renderIO(){
   <div class="sec">輸入</div>
   <div class="fcard">
     <div class="frow"><span class="flbl">${t('牛奶')}</span><input type="number" inputmode="numeric" id="milk" placeholder="0" min="0"/><span class="funit">cc</span></div>
+    <div class="frow"><span class="flbl">${t('水')}</span><input type="number" inputmode="numeric" id="water" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <div class="frow"><span class="flbl">${t('藥＋水')}</span><input type="number" inputmode="numeric" id="mw" placeholder="0" min="0"/><span class="funit">cc</span></div>
     <hr class="divider"/>
     <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="iit-display" readonly onclick="window.openTimePicker('iit')" value="${fmt12(nt())}"/><input type="hidden" id="iit" value="${nt()}"/><button class="now-btn" onclick="window.setNow('iit')">${t('現在')}</button><span class="trow-pad"></span></div>
@@ -889,13 +892,15 @@ function buildSubtotal(inW,outW,diff){
 window.addIn=function(){
   if(!cgName){showNameModal();return;}
   const milk=parseFloat(el('milk').value)||0;
+  const water=parseFloat(el('water').value)||0;
   const mw=parseFloat(el('mw').value)||0;
-  if(!milk&&!mw){showToast(t('未輸入數值'),[t('請填寫牛奶或藥＋水的數量後再新增。')]);return;}
+  if(!milk&&!water&&!mw){showToast(t('未輸入數值'),[t('請填寫牛奶、水或藥＋水的數量後再新增。')]);return;}
   const time=el('iit').value;
-  const rec={id:String(Date.now()),date:dk(),t:'in',time,milk,mw,cg:cgName};
+  const rec={id:String(Date.now()),date:dk(),t:'in',time,milk,water,mw,cg:cgName};
   ioRecs.unshift(rec); saveAll();
   const lines=[`${t('時間：')}${time}`];
   if(milk)lines.push(`${t('牛奶：')}${milk} cc（${t('水分')} ${milkW(milk)} cc）`);
+  if(water)lines.push(`${t('水：')}${water} cc`);
   if(mw)lines.push(`${t('藥＋水：')}${mw} cc`);
   lines.push(`${t('紀錄者：')}${cgName}`);
   showToast(t('已成功紀錄（輸入）'),lines);
@@ -922,7 +927,7 @@ window.addOut=function(){
 window.confirmDelIO=function(id){
   const rec=ioRecs.find(r=>r.id===id);if(!rec)return;
   let desc='';
-  if(rec.t==='in'){if(rec.milk)desc+=`牛奶 ${rec.milk}cc `;if(rec.mw)desc+=`藥水 ${rec.mw}cc`;}
+  if(rec.t==='in'){if(rec.milk)desc+=`牛奶 ${rec.milk}cc `;if(rec.water)desc+=`水 ${rec.water}cc `;if(rec.mw)desc+=`藥水 ${rec.mw}cc`;}
   else{if(rec.urine)desc+=`尿液 ${rec.urine}cc `;if(rec.stool)desc+=`大便 ${rec.stool}g`;}
   showConfirm(t('確認刪除？'),`${rec.time}　${rec.cg||''}　${desc.trim()}`,()=>{
     ioRecs=ioRecs.filter(r=>r.id!==id); M().innerHTML=''; saveAll();
@@ -1037,7 +1042,7 @@ function getUA(){
     label=`距上次解尿（${dateStr}${lastRec.time}）`;
   }
   const hrs=Math.floor(sinceMs/3600000),mins=Math.floor((sinceMs%3600000)/60000);
-  const inAfter=ioRecs.filter(r=>{if(r.t!=='in')return false;const rt=r2d(r);return rt>=lastT&&rt<=now;}).reduce((s,r)=>s+milkW(r.milk||0)+(r.mw||0),0);
+  const inAfter=ioRecs.filter(r=>{if(r.t!=='in')return false;const rt=r2d(r);return rt>=lastT&&rt<=now;}).reduce((s,r)=>s+milkW(r.milk||0)+(r.water||0)+(r.mw||0),0);
   return{hrs,mins,inAfter,label,level:hrs>=8?'danger':hrs>=6?'warn':'ok',sRecs};
 }
 
@@ -1113,7 +1118,7 @@ function drawChart(){
     const last7=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);last7.push(dk(d));}
     labels=last7.map(d=>d.slice(5));
     if(chartType==='io'){
-      const inD=last7.map(date=>ioRecs.filter(r=>r.date===date&&r.t==='in').reduce((s,r)=>s+milkW(r.milk||0)+(r.mw||0),0));
+      const inD=last7.map(date=>ioRecs.filter(r=>r.date===date&&r.t==='in').reduce((s,r)=>s+milkW(r.milk||0)+(r.water||0)+(r.mw||0),0));
       const outD=last7.map(date=>ioRecs.filter(r=>r.date===date&&r.t==='out').reduce((s,r)=>s+(r.urine||0),0));
       datasets=[
         {label:'輸入水分',data:inD,borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,0.1)',tension:0.3,fill:true,pointStyle:'circle'},
@@ -1141,7 +1146,7 @@ function drawChart(){
     const hours=Array.from({length:24},(_,i)=>i);
     labels=hours.map(h=>h%3===0?String(h).padStart(2,'0'):'');
     if(chartType==='io'){
-      const inD=hours.map(h=>ioRecs.filter(r=>r.date===today&&r.t==='in'&&parseInt(r.time.split(':')[0])===h).reduce((s,r)=>s+milkW(r.milk||0)+(r.mw||0),0));
+      const inD=hours.map(h=>ioRecs.filter(r=>r.date===today&&r.t==='in'&&parseInt(r.time.split(':')[0])===h).reduce((s,r)=>s+milkW(r.milk||0)+(r.water||0)+(r.mw||0),0));
       const outD=hours.map(h=>ioRecs.filter(r=>r.date===today&&r.t==='out'&&parseInt(r.time.split(':')[0])===h).reduce((s,r)=>s+(r.urine||0),0));
       datasets=[
         {label:'輸入水分',data:inD,borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,0.12)',tension:0.2,fill:true,pointRadius:3,pointStyle:'circle'},
@@ -1203,7 +1208,7 @@ window.exportReport=function(){
   </div>
   <div style="font-weight:600;margin-bottom:7px">輸出入紀錄</div>
   ${sortT(ioRecs.filter(r=>r.date===today)).map(r=>{
-    let d='';if(r.t==='in'){if(r.milk)d+=`牛奶 ${r.milk}cc（水分${milkW(r.milk)}cc）`;if(r.mw)d+=` 藥水 ${r.mw}cc`;}
+    let d='';if(r.t==='in'){if(r.milk)d+=`牛奶 ${r.milk}cc（水分${milkW(r.milk)}cc）`;if(r.water)d+=` 水 ${r.water}cc`;if(r.mw)d+=` 藥水 ${r.mw}cc`;}
     else{if(r.urine)d+=`尿液 ${r.urine}cc`;if(r.stool)d+=` 大便 ${r.stool}`;}
     return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #eee;color:${r.t==='in'?'#185FA5':'#cc0000'}"><span>${r.time}　${r.cg||''}</span><span>${d.trim()||'—'}</span></div>`;
   }).join('')}

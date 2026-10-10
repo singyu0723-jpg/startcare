@@ -458,6 +458,27 @@ body{
 .vt-val span.alert{color:var(--danger);}
 .vt-unit{font-size:10px;color:var(--muted);font-weight:500;white-space:nowrap;}
 .vt-sep{width:1px;height:24px;background:var(--rim);flex-shrink:0;}
+/* ── 過往紀錄編輯 ── */
+.sec-with-btn{align-items:center}
+.edit-toggle{
+  height:32px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;
+  border:1px solid var(--rim-2);background:var(--brand-soft);color:var(--brand-deep);font-family:inherit;letter-spacing:.04em;
+}
+.edit-toggle.on{background:var(--brand);color:#fff;border-color:transparent}
+.edit-hint{font-size:12px;color:var(--muted);font-weight:600;margin:0 2px 10px;text-align:center}
+.add-rec-row{display:flex;gap:8px;margin-bottom:14px}
+.add-rec-btn{
+  flex:1;height:44px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;
+  border:1.5px dashed var(--brand);background:var(--brand-tint);color:var(--brand-deep);font-family:inherit;letter-spacing:.04em;
+}
+.add-rec-btn:active{transform:scale(.98)}
+.rec-editable{cursor:pointer}
+.rec-editable:active{filter:brightness(.97)}
+.rec-edited{display:inline-block;margin-left:4px;font-size:9.5px;padding:1px 5px;border-radius:6px;background:var(--warn-soft);color:var(--warn);font-weight:700}
+.ed-box{max-width:380px;max-height:90vh;overflow-y:auto}
+.ed-box h3{display:flex;align-items:baseline;gap:8px}
+.ed-date{font-size:13px;color:var(--muted);font-weight:600}
+.ed-box .trow{grid-template-columns:64px minmax(0,1fr) 40px}
 </style>
 </head>
 <body>
@@ -502,6 +523,7 @@ const DOC_REF = doc(db, "appData", "care_tracker_v1");
 
 let tab=0, cgName='', ioRecs=[], vtRecs=[], apptRecs=[], careRecs=[], chartInst=null, chartType='io', chartRange='week', viewDate='';
 let isSaving=false;
+let editMode=false;
 
 // ── 簡繁切換 ──
 const ZH_TW_TO_CN = {
@@ -510,7 +532,7 @@ const ZH_TW_TO_CN = {
   '當天合計':'当天合计','總輸入':'总输入','總輸出':'总输出',
   '每日照顧':'每日照顾','每日照顧表':'每日照顾表',
   '換鼻貼':'换鼻贴','擦藥(上午)':'擦药(上午)','擦藥(下午)':'擦药(下午)','坐輪椅':'坐轮椅','坐床邊':'坐床边',
-  '口腔清潔(上午)':'口腔清洁(上午)','口腔清潔(下午)':'口腔清洁(下午)','手足復健':'手足复健','口腔運動':'口腔运动',
+  '口腔清潔(上午)':'口腔清洁(上午)','口腔清潔(下午)':'口腔清洁(下午)','面部清潔(上午)':'面部清洁(上午)','面部清潔(下午)':'面部清洁(下午)','手足復健':'手足复健','口腔運動':'口腔运动',
   '血壓體溫(上午)':'血压体温(上午)','血壓體溫(下午)':'血压体温(下午)',
   '護唇膏(上午)':'护唇膏(上午)','護唇膏(下午)':'护唇膏(下午)',
   '輸入':'输入','牛奶':'牛奶','藥＋水':'药＋水','時間':'时间','現在':'现在','新增輸入':'新增输入',
@@ -561,6 +583,7 @@ const ZH_TW_TO_CN = {
   '輸出入紀錄':'输出入记录','生理狀態紀錄':'生理状态记录',
   '本報告由星辰護理日誌自動產生':'本报告由星辰护理日志自动产生',
   '上午':'上午','下午':'下午','選擇時間':'选择时间',
+  '編輯':'编辑','完成':'完成','補登':'补登','修改紀錄':'修改记录','儲存':'储存','點紀錄可修改，按 × 刪除':'点记录可修改，按 × 删除',
 };
 function t(s){
   if(typeof s !== 'string') return s;
@@ -840,7 +863,7 @@ window.saveCGName=function(){
 };
 
 function goTab(i){
-  tab=i;
+  tab=i;editMode=false;
   document.querySelectorAll('.tab').forEach((t,idx)=>t.classList.toggle('active',idx===i));
   if(chartInst){chartInst.destroy();chartInst=null;}
   render();
@@ -876,9 +899,9 @@ function calcTotals(recs){
   return{inW,outW,diff:inW-outW};
 }
 
-function buildIORecHTML(r,showDel){
+function buildIORecHTML(r,showDel,editable){
   const cls=r.t==='in'?'rec-in':'rec-out';
-  const delBtn=showDel?`<span class="rec-del" onclick="window.confirmDelIO('${r.id}')">×</span>`:'';
+  const delBtn=showDel?`<span class="rec-del" onclick="event.stopPropagation();window.confirmDelIO('${r.id}')">×</span>`:'';
   let rightHTML='';
   if(r.t==='in'){
     const wTotal=milkW(r.milk||0)+(r.water||0)+(r.mw||0);
@@ -893,11 +916,12 @@ function buildIORecHTML(r,showDel){
     if(r.stool)parts.push(`<span class="rv-pair"><span class="rv-lbl">${t('大便')}</span><span class="rv-val" style="font-size:12px">${r.stool}</span></span>`);
     rightHTML=`<div class="rv-row">${parts.join('<span class="rv-sep">｜</span>')}</div>`;
   }
-  return`<div class="${cls}"><div class="rec-left"><div class="rec-time">${r.time}</div><div class="rec-cg">${r.cg||''}</div></div><div class="rec-right">${rightHTML}</div>${delBtn}</div>`;
+  const ed=editable?` rec-editable" onclick="window.openRecEditor('io','${r.id}')`:'';
+  return`<div class="${cls}${ed}"><div class="rec-left"><div class="rec-time">${r.time}</div><div class="rec-cg">${r.cg||''}${r.editedBy?'<span class="rec-edited">已修改</span>':''}</div></div><div class="rec-right">${rightHTML}</div>${delBtn}</div>`;
 }
 
-function buildVTRecHTML(r,showDel){
-  const delBtn=showDel?`<span class="rec-del" onclick="window.confirmDelVT('${r.id}')">×</span>`:'';
+function buildVTRecHTML(r,showDel,editable){
+  const delBtn=showDel?`<span class="rec-del" onclick="event.stopPropagation();window.confirmDelVT('${r.id}')">×</span>`:'';
   const cols=[];
   if(r.temp!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('體溫')}</div><div class="vt-val ${ac(tempAlert(r.temp))}">${r.temp}<span class="vt-unit"> °C</span></div></div>`);
   if(r.sbp!=null&&r.dbp!=null){
@@ -908,7 +932,8 @@ function buildVTRecHTML(r,showDel){
   }
   if(r.pulse!=null)cols.push(`<div class="vt-col"><div class="vt-lbl">${t('脈搏')}</div><div class="vt-val ${ac(pulseAlert(r.pulse))}">${r.pulse}<span class="vt-unit"> 次/分</span></div></div>`);
   const sep='<div class="vt-sep"></div>';
-  return`<div class="rec-vt"><div class="rec-left"><div class="rec-time">${r.time}</div><div class="rec-cg">${r.cg||''}</div></div><div class="vt-cols">${cols.join(sep)}</div>${delBtn}</div>`;
+  const ed=editable?` rec-editable" onclick="window.openRecEditor('vt','${r.id}')`:'';
+  return`<div class="rec-vt${ed}"><div class="rec-left"><div class="rec-time">${r.time}</div><div class="rec-cg">${r.cg||''}${r.editedBy?'<span class="rec-edited">已修改</span>':''}</div></div><div class="vt-cols">${cols.join(sep)}</div>${delBtn}</div>`;
 }
 
 // ── TAB 1 ──
@@ -1008,12 +1033,12 @@ window.confirmDelIO=function(id){
   if(rec.t==='in'){if(rec.milk)desc+=`牛奶 ${rec.milk}cc `;if(rec.water)desc+=`水 ${rec.water}cc `;if(rec.mw)desc+=`藥水 ${rec.mw}cc`;}
   else{if(rec.urine)desc+=`尿液 ${rec.urine}cc `;if(rec.stool)desc+=`大便 ${rec.stool}g`;}
   showConfirm(t('確認刪除？'),`${rec.time}　${rec.cg||''}　${desc.trim()}`,()=>{
-    ioRecs=ioRecs.filter(r=>r.id!==id); M().innerHTML=''; saveAll();
+    ioRecs=ioRecs.filter(r=>r.id!==id); M().innerHTML=''; saveAll(); render();
   });
 };
 
 // ── 每日照顧表 checklist ──
-const CARE_ITEMS=['換鼻貼','擦藥(上午)','擦藥(下午)','坐輪椅','坐床邊','口腔清潔(上午)','口腔清潔(下午)','手足復健','口腔運動','擦澡','洗澡','血壓體溫(上午)','血壓體溫(下午)','護唇膏(上午)','護唇膏(下午)'];
+const CARE_ITEMS=['換鼻貼','擦藥(上午)','擦藥(下午)','坐輪椅','坐床邊','口腔清潔(上午)','口腔清潔(下午)','面部清潔(上午)','面部清潔(下午)','手足復健','口腔運動','擦澡','洗澡','血壓體溫(上午)','血壓體溫(下午)','護唇膏(上午)','護唇膏(下午)'];
 function buildCareChecklist(){
   const today=dk();
   const todayRecs=careRecs.filter(r=>r.date===today);
@@ -1084,7 +1109,7 @@ window.confirmDelVT=function(id){
   if(rec.sbp!=null&&rec.dbp!=null)ps.push(`血壓 ${rec.sbp}/${rec.dbp}`);
   if(rec.pulse!=null)ps.push(`脈搏 ${rec.pulse}`);
   showConfirm(t('確認刪除？'),`${rec.time}　${rec.cg||''}　${ps.join('　')}`,()=>{
-    vtRecs=vtRecs.filter(r=>r.id!==id); M().innerHTML=''; saveAll();
+    vtRecs=vtRecs.filter(r=>r.id!==id); M().innerHTML=''; saveAll(); render();
   });
 };
 
@@ -1190,7 +1215,7 @@ function renderReview(){
   </div>
   <div style="display:flex;gap:8px;margin-bottom:8px;font-size:11px;color:#888;flex-wrap:wrap" id="cleg"></div>
   <div style="position:relative;width:100%;height:220px;margin-top:0"><canvas id="tc" role="img" aria-label="趨勢圖">趨勢圖</canvas></div>
-  <div class="sec" style="margin-top:48px">每日詳細記錄</div>
+  <div class="sec sec-with-btn" style="margin-top:48px"><span style="flex:1">每日詳細記錄</span><button class="edit-toggle${editMode?' on':''}" onclick="window.toggleEditMode()">${editMode?t('完成'):t('編輯')}</button></div>
   <div class="date-nav">
     <button onclick="window.chDate(-1)">‹ ${t('前一天')}</button>
     <span>${isToday?t('今天')+' '+dkFmt(viewDate):dkFmt(viewDate)}</span>
@@ -1219,10 +1244,99 @@ function buildDaySummary(){
 function buildDayDetail(){
   const dayIO=sortT(ioRecs.filter(r=>r.date===viewDate));
   const dayVT=sortT(vtRecs.filter(r=>r.date===viewDate));
-  let items=chartType==='io'?dayIO.map(r=>buildIORecHTML(r,false)):dayVT.map(r=>buildVTRecHTML(r,false));
-  if(!items.length)return'<div class="empty">該日無對應記錄</div>';
-  return`<div class="rec-list">${items.join('')}</div>`;
+  let items=chartType==='io'?dayIO.map(r=>buildIORecHTML(r,editMode,editMode)):dayVT.map(r=>buildVTRecHTML(r,editMode,editMode));
+  let addBar='';
+  if(editMode){
+    const btns=chartType==='io'
+      ?`<button class="add-rec-btn" onclick="window.openRecEditor('in')">＋ ${t('補登')}輸入</button><button class="add-rec-btn" onclick="window.openRecEditor('out')">＋ ${t('補登')}輸出</button>`
+      :`<button class="add-rec-btn" onclick="window.openRecEditor('vtnew')">＋ ${t('補登')}生理紀錄</button>`;
+    addBar=`<div class="edit-hint">${t('點紀錄可修改，按 × 刪除')}</div><div class="add-rec-row">${btns}</div>`;
+  }
+  if(!items.length)return addBar+'<div class="empty">該日無對應記錄</div>';
+  return`${addBar}<div class="rec-list">${items.join('')}</div>`;
 }
+window.toggleEditMode=function(){
+  if(!editMode&&!cgName){showNameModal();return;}
+  editMode=!editMode;renderReview();
+};
+
+// ── 補登／修改過往紀錄 ──
+let _edStoolQty='',_edStoolType='';
+window._edSelStool=function(group,val){
+  if(group==='qty') _edStoolQty=_edStoolQty===val?'':val; else _edStoolType=_edStoolType===val?'':val;
+  ['多','中','少'].forEach(v=>{const b=el('esq-'+v);if(b)b.className='sel-btn'+(_edStoolQty===v?' selected':'');});
+  ['成形','軟便','水便'].forEach(v=>{const b=el('est-'+v);if(b)b.className='sel-btn'+(_edStoolType===v?' selected':'');});
+};
+// mode: 'in' / 'out' / 'vtnew' 為補登；'io' / 'vt' 加上 id 為修改
+window.openRecEditor=function(mode,id){
+  if(!cgName){showNameModal();return;}
+  let rec=null,kind=mode;
+  if(mode==='io'){rec=ioRecs.find(r=>r.id===id);if(!rec)return;kind=rec.t;}
+  else if(mode==='vt'){rec=vtRecs.find(r=>r.id===id);if(!rec)return;kind='vtnew';}
+  const isEdit=!!rec;
+  const time=rec?rec.time:nt();
+  const v=k=>rec&&rec[k]!=null&&rec[k]!==0?rec[k]:'';
+  const numRow=(lbl,idn,unit,mode2,ph)=>`<div class="frow"><span class="flbl">${t(lbl)}</span><input type="number" inputmode="${mode2||'numeric'}" id="${idn}" placeholder="${ph||'0'}" ${mode2==='decimal'?'step="0.1"':''} value="${v(idn.slice(3))}"/><span class="funit">${unit}</span></div>`;
+  let body='',title='';
+  if(kind==='in'){
+    title=isEdit?'修改輸入':'補登輸入';
+    body=numRow('牛奶','ed-milk','cc')+numRow('水','ed-water','cc')+numRow('藥＋水','ed-mw','cc');
+  }else if(kind==='out'){
+    title=isEdit?'修改輸出':'補登輸出';
+    const parts=(rec&&rec.stool?rec.stool:'').split('／');
+    _edStoolQty=parts.find(p=>['多','中','少'].includes(p))||'';
+    _edStoolType=parts.find(p=>['成形','軟便','水便'].includes(p))||'';
+    const sb=(pre,g,val,cur)=>`<button type="button" class="sel-btn${cur===val?' selected':''}" id="${pre}-${val}" onclick="window._edSelStool('${g}','${val}')">${t(val)}</button>`;
+    body=numRow('尿液','ed-urine','cc')+
+      `<div class="stool-row"><span class="flbl">${t('大便')}</span><div class="stool-stack">
+        <div class="stool-seg">${['多','中','少'].map(x=>sb('esq','qty',x,_edStoolQty)).join('')}</div>
+        <div class="stool-seg">${['成形','軟便','水便'].map(x=>sb('est','type',x,_edStoolType)).join('')}</div>
+      </div></div>`;
+  }else{
+    title=isEdit?'修改生理紀錄':'補登生理紀錄';
+    body=numRow('體溫','ed-temp','°C','decimal','36.5')+numRow('高壓','ed-sbp','mmHg','numeric','120')+numRow('低壓','ed-dbp','mmHg','numeric','80')+numRow('脈搏','ed-pulse','次/分','numeric','72');
+  }
+  M().innerHTML=`<div class="modal-bg"><div class="modal-box ed-box">
+    <h3>${t(title)}<span class="ed-date">${dkFmt(viewDate)}</span></h3>
+    ${body}
+    <hr class="divider"/>
+    <div class="trow"><label>${t('時間')}</label><input type="text" class="time-input" id="edt-display" readonly onclick="window.openTimePicker('edt')" value="${fmt12(time)}"/><input type="hidden" id="edt" value="${time}"/><span class="trow-pad"></span></div>
+    <div class="confirm-btns" style="margin-top:22px">
+      <button class="c-cancel" onclick="document.getElementById('modal-container').innerHTML=''">${t('取消')}</button>
+      <button class="modal-ok" style="flex:1" onclick="window.saveRecEditor('${kind}','${isEdit?rec.id:''}')">${isEdit?t('儲存'):t('補登')}</button>
+    </div>
+  </div></div>`;
+};
+window.saveRecEditor=function(kind,id){
+  const num=k=>{const x=el(k);return x&&x.value!==''?parseFloat(x.value):null;};
+  const time=el('edt').value;
+  if(!time){showToast('請選擇時間',[]);return;}
+  // 不可補登到未來
+  const [h,m]=time.split(':').map(Number);const [y,mo,d]=viewDate.split('-').map(Number);
+  if(new Date(y,mo-1,d,h,m)>new Date()){showToast('時間不正確',['不能補登未來的時間。']);return;}
+  const base=id?{editedBy:cgName,editedAt:new Date().toISOString()}:{id:String(Date.now()),date:viewDate,cg:cgName,backfilled:true};
+  if(kind==='in'){
+    const milk=num('ed-milk')||0,water=num('ed-water')||0,mw=num('ed-mw')||0;
+    if(!milk&&!water&&!mw){showToast(t('未輸入數值'),[t('請填寫牛奶、水或藥＋水的數量後再新增。')]);return;}
+    if(id) ioRecs=ioRecs.map(r=>r.id===id?{...r,...base,time,milk,water,mw}:r);
+    else ioRecs.unshift({...base,t:'in',time,milk,water,mw});
+  }else if(kind==='out'){
+    const urine=num('ed-urine')||0;
+    const stool=[_edStoolQty,_edStoolType].filter(Boolean).join('／');
+    if(!urine&&!stool){showToast(t('未輸入數值'),[t('請填寫尿液或大便的數量後再新增。')]);return;}
+    if(id) ioRecs=ioRecs.map(r=>r.id===id?{...r,...base,time,urine,stool}:r);
+    else ioRecs.unshift({...base,t:'out',time,urine,stool});
+  }else{
+    const vals={temp:num('ed-temp'),sbp:num('ed-sbp'),dbp:num('ed-dbp'),pulse:num('ed-pulse')};
+    if(Object.values(vals).every(x=>x==null)){showToast(t('未輸入數值'),[t('請至少填寫一項生理數值後再新增。')]);return;}
+    const build=(old)=>{const r={...old,...base,time};['temp','sbp','dbp','pulse'].forEach(k=>{if(vals[k]!=null)r[k]=vals[k];else delete r[k];});return r;};
+    if(id) vtRecs=vtRecs.map(r=>r.id===id?build(r):r);
+    else vtRecs.unshift(build({}));
+  }
+  M().innerHTML='';
+  saveAll();
+  render();
+};
 window.chDate=function(d){
   const c=new Date(viewDate+'T12:00:00');c.setDate(c.getDate()+d);
   const nd=dk(c);if(nd>dk())return;viewDate=nd;renderReview();

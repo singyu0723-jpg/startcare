@@ -675,7 +675,7 @@ window.openTimePicker=function(id){
     const he=document.getElementById(targetId);
     const de=document.getElementById(targetId+'-display');
     if(he)he.value=timeStr;
-    if(de)de.value=fmt12(timeStr);
+    if(de)de.value=targetId==='ap-time'?timeStr:fmt12(timeStr);
     bg.remove();modal.remove();
   };
   document.body.appendChild(bg);
@@ -1591,6 +1591,12 @@ function renderApptPage(){
         const _M = parseInt(_m), _D = parseInt(_d);
         const numStr = String(a.num||'');
         const numFontSize = numStr.length >= 4 ? '22px' : '28px';
+        const tStr = a.apptTime || '';
+        const rightBox = numStr
+          ? `<div style="font-size:${numFontSize};font-weight:700;color:#377054;line-height:1;font-variant-numeric:tabular-nums;${isWarn && badge ? 'margin-top:18px;' : ''}">${numStr}</div>
+            <div style="font-size:10.5px;color:#377054;margin-top:3px;font-weight:600">號</div>
+            ${tStr?`<div style="font-size:12px;color:#377054;margin-top:4px;font-weight:700;font-variant-numeric:tabular-nums">${tStr}</div>`:''}`
+          : `<div style="font-size:22px;font-weight:700;color:#377054;line-height:1;font-variant-numeric:tabular-nums;${isWarn && badge ? 'margin-top:18px;' : ''}">${tStr}</div>`;
         html += `
         <div style="background:#fff;border:1px solid ${cardBorder};border-radius:18px;padding:14px;margin-bottom:10px;display:flex;align-items:stretch;gap:10px;min-height:130px;overflow:hidden">
           <div style="flex-shrink:0;width:88px;background:${dateBg};border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px">
@@ -1605,8 +1611,7 @@ function renderApptPage(){
           </div>
           <div style="flex-shrink:0;width:74px;background:#E8F3EC;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;position:relative">
             ${isWarn && badge ? `<div style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:9px;background:#b07a25;color:#fff;white-space:nowrap">${badge}</div>` : ''}
-            <div style="font-size:${numFontSize};font-weight:700;color:#377054;line-height:1;font-variant-numeric:tabular-nums;${isWarn && badge ? 'margin-top:18px;' : ''}">${numStr}</div>
-            <div style="font-size:10.5px;color:#377054;margin-top:3px;font-weight:600">號</div>
+            ${rightBox}
           </div>
           <span onclick="window.confirmDelAppt('${a.id}')" style="flex-shrink:0;align-self:center;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:6px 2px">×</span>
         </div>`;
@@ -1620,7 +1625,7 @@ function renderApptPage(){
       html += `
       <div style="background:#f8f9f8;border:1px solid var(--rim);border-radius:14px;padding:12px 14px 12px 18px;margin-bottom:10px;position:relative;opacity:.85">
         <div style="position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:#c5d1ca"></div>
-        <div style="font-size:13px;font-weight:600;color:var(--muted)">${dkFmt(a.date)}　${a.session||''}　${a.num||''} 號　<span style="display:inline-block;font-size:10px;padding:2px 7px;border-radius:8px;background:#e3ece7;color:var(--muted);font-weight:700">${a.patient}</span></div>
+        <div style="font-size:13px;font-weight:600;color:var(--muted)">${dkFmt(a.date)}　${a.session||''}　${a.num?a.num+' 號':''}${a.num&&a.apptTime?'　':''}${a.apptTime||''}　<span style="display:inline-block;font-size:10px;padding:2px 7px;border-radius:8px;background:#e3ece7;color:var(--muted);font-weight:700">${a.patient}</span></div>
         <div style="font-size:13px;color:var(--muted);margin-top:5px">${a.hospital||''}　${a.dept||''}</div>
         ${a.doctor?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${a.doctor}</div>`:''}
       </div>`;
@@ -1679,6 +1684,14 @@ window.showApptForm = function(editId){
     <div style="margin-bottom:18px">
       <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px">看診號碼</div>
       <input type="number" inputmode="numeric" id="ap-num" placeholder="例：25" style="width:100%;height:44px;padding:0 14px;border:1px solid var(--rim-2);border-radius:12px;font-size:15px;font-family:inherit;background:var(--surface-2);text-align:center;font-weight:600" value="${a?(a.num||''):''}"/>
+    </div>
+    <div style="margin-bottom:18px">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px">時間 <span style="font-weight:500;color:var(--muted)">（復健等沒有號碼的可填這個）</span></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="ap-time-display" readonly placeholder="點選設定時間" onclick="window.openTimePicker('ap-time')" style="flex:1;height:44px;padding:0 14px;border:1px solid var(--rim-2);border-radius:12px;font-size:15px;font-family:inherit;background:var(--surface-2);text-align:center;font-weight:600;cursor:pointer" value="${a&&a.apptTime?a.apptTime:''}"/>
+        <input type="hidden" id="ap-time" value="${a&&a.apptTime?a.apptTime:''}"/>
+        <button type="button" class="c-cancel" style="flex:0 0 64px;height:44px" onclick="document.getElementById('ap-time').value='';document.getElementById('ap-time-display').value=''">清除</button>
+      </div>
     </div>
     <div style="display:flex;gap:10px">
       <button class="c-cancel" onclick="document.getElementById('modal-container').innerHTML=''" style="flex:1">取消</button>
@@ -1742,14 +1755,15 @@ window.saveAppt = function(){
   const date = el('ap-date').value;
   const session = _apptSession;
   const num = el('ap-num').value.trim();
-  if(!hospital||!dept||!date||!session||!num){
-    showToast('資料不完整',['請填寫醫院、科別、日期、時段、看診號碼（醫師可選填）']);
+  const apptTime = el('ap-time').value.trim();
+  if(!hospital||!dept||!date||!session||(!num&&!apptTime)){
+    showToast('資料不完整',['請填寫醫院、科別、日期、時段，以及看診號碼或時間（擇一即可，醫師可選填）']);
     return;
   }
   if(_apptEditId){
-    apptRecs = apptRecs.map(a=> a.id===_apptEditId ? {...a, patient:_apptPatient, hospital, dept, doctor, date, session, num} : a);
+    apptRecs = apptRecs.map(a=> a.id===_apptEditId ? {...a, patient:_apptPatient, hospital, dept, doctor, date, session, num, apptTime} : a);
   } else {
-    apptRecs.push({id:String(Date.now()), patient:_apptPatient, hospital, dept, doctor, date, session, num, cg:cgName});
+    apptRecs.push({id:String(Date.now()), patient:_apptPatient, hospital, dept, doctor, date, session, num, apptTime, cg:cgName});
   }
   saveAll();
   M().innerHTML='';
@@ -1759,7 +1773,7 @@ window.saveAppt = function(){
 window.confirmDelAppt = function(id){
   const a = apptRecs.find(x=>x.id===id);
   if(!a)return;
-  showConfirm('確認刪除？',`${a.patient}　${dkFmt(a.date)} ${a.session||''} ${a.num||''}號　${a.hospital||''}　${a.dept||''}`,()=>{
+  showConfirm('確認刪除？',`${a.patient}　${dkFmt(a.date)} ${a.session||''} ${a.num?a.num+'號':''} ${a.apptTime||''}　${a.hospital||''}　${a.dept||''}`,()=>{
     apptRecs = apptRecs.filter(x=>x.id!==id);
     M().innerHTML='';
     saveAll();

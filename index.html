@@ -506,7 +506,7 @@ body{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, onSnapshot, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB5rlBEl_VSRFI3BNCjYrr5Z6FWHSEO6io",
@@ -758,17 +758,33 @@ const _connTimeout = setTimeout(()=>{
   }
 }, 5000);
 
+// ── 資料保護（2026-11-02）──
+// 舊版 saveAll 會把「手機記憶體裡的整份陣列」直接蓋回雲端；若某台手機在網路不穩時
+// 先收到空的快取快照，再新增一筆，就會把雲端所有歷史紀錄蓋成只剩那一筆（10/30 發生過）。
+// 新做法：只送出「這台手機實際改了哪幾筆」，在交易中套用到雲端最新資料上，絕不整份覆蓋。
+const COLS=['ioRecs','vtRecs','apptRecs','careRecs'];
+let base={ioRecs:[],vtRecs:[],apptRecs:[],careRecs:[]};   // 最後一次從雲端收到的版本
+let serverReady=false, connError='';
+const clone=o=>JSON.parse(JSON.stringify(o));
+const rk=r=>r&&r.id!=null?String(r.id):JSON.stringify(r);
+
 onSnapshot(DOC_REF, (snap) => {
+  // 網路不穩時可能先收到「空的本機快取」，這不是真的雲端資料，不可拿來顯示或存檔
+  if(!snap.exists() && snap.metadata.fromCache) return;
   clearTimeout(_connTimeout);
+  serverReady=true;
   if(snap.exists()){
     const data=snap.data();
     ioRecs=data.ioRecs||[];
     vtRecs=data.vtRecs||[];
     apptRecs=data.apptRecs||[];
     careRecs=data.careRecs||[];
+    base=clone({ioRecs,vtRecs,apptRecs,careRecs});
+    maybeDailyBackup(data);
     // cgName 只從 localStorage 讀，不從雲端同步，每個裝置各自記住自己的名字
   }else{
     ioRecs=[]; vtRecs=[]; apptRecs=[]; careRecs=[];
+    base=clone({ioRecs,vtRecs,apptRecs,careRecs});
   }
   setSyncDot('online');
   viewDate=viewDate||dk();
@@ -779,11 +795,13 @@ onSnapshot(DOC_REF, (snap) => {
   clearTimeout(_connTimeout);
   setSyncDot('');
   console.error('Firestore error:', err);
+  serverReady=false;
   const code = err.code || '';
   let msg = '連線錯誤';
   if(code==='permission-denied') msg='Firebase 安全性規則拒絕存取，請至 Firestore Console 更新規則為測試模式';
   else if(code==='unavailable') msg='Firebase 服務暫時無法使用，請稍後重試';
   else msg=`連線錯誤：${code || err.message}`;
+  connError=msg;
   el('content').innerHTML=`<div style="padding:24px 16px;color:#666;font-size:14px;line-height:1.8">
     <div style="font-size:16px;font-weight:600;color:#cc0000;margin-bottom:12px">連線失敗</div>
     <div>${msg}</div>
@@ -792,14 +810,58 @@ onSnapshot(DOC_REF, (snap) => {
 });
 
 async function saveAll(){
+  if(!serverReady){alert('尚未連上雲端，這筆還沒存。請確認網路後重新開啟 App 再試。');return;}
+  const local={ioRecs,vtRecs,apptRecs,careRecs};
+  const changes={};let delCount=0,upCount=0;
+  COLS.forEach(c=>{
+    const b=new Map((base[c]||[]).map(r=>[rk(r),JSON.stringify(r)]));
+    const l=new Map((local[c]||[]).map(r=>[rk(r),r]));
+    const up=[...l.entries()].filter(([k,r])=>b.get(k)!==JSON.stringify(r)).map(([k,r])=>r);
+    const del=[...b.keys()].filter(k=>!l.has(k));
+    changes[c]={up,del};delCount+=del.length;upCount+=up.length;
+  });
+  if(!upCount&&!delCount) return;
+  // 保險：正常操作一次只會刪一筆，一次要刪很多筆一定是異常，直接擋下
+  if(delCount>2){alert('偵測到異常：一次要刪除 '+delCount+' 筆紀錄，已阻止存檔以保護資料。請重新開啟 App。');return;}
   setSyncDot('syncing');
   try{
-    await setDoc(DOC_REF,{ioRecs,vtRecs,apptRecs,careRecs},{merge:true});
+    await runTransaction(db, async (tx)=>{
+      const s=await tx.get(DOC_REF);
+      const d=s.exists()?s.data():{};
+      const out={};
+      COLS.forEach(c=>{
+        const m=new Map((d[c]||[]).map(r=>[rk(r),r]));
+        changes[c].del.forEach(k=>m.delete(k));
+        changes[c].up.forEach(r=>m.set(rk(r),r));
+        out[c]=[...m.values()];
+      });
+      tx.set(DOC_REF,out,{merge:true});
+    });
+    base=clone(local);
     setSyncDot('online');
   }catch(e){
+    console.error(e);
     setSyncDot('');
     alert(t('儲存失敗，請確認網路連線'));
   }
+}
+
+// ── 每日自動備份：每天第一次開 App 時，把整份資料另存一份 appData/backup_YYYY-MM-DD ──
+let _backupChecked='';
+async function maybeDailyBackup(data){
+  const today=dk();
+  if(_backupChecked===today) return;
+  const total=COLS.reduce((n,c)=>n+((data[c]||[]).length),0);
+  if(!total) return;
+  _backupChecked=today;
+  try{
+    const ref=doc(db,'appData','backup_'+today);
+    const s=await getDoc(ref);
+    if(s.exists()) return;
+    const payload={savedAt:new Date().toISOString()};
+    COLS.forEach(c=>payload[c]=data[c]||[]);
+    await setDoc(ref,payload);
+  }catch(e){console.warn('daily backup skipped',e);}
 }
 
 function updatePill(){
@@ -868,7 +930,14 @@ function goTab(i){
   if(chartInst){chartInst.destroy();chartInst=null;}
   render();
 }
-function render(){updateTabBar();updateUrineReminder();updateStoolReminder();if(tab===0)renderIO();else if(tab===1)renderVT();else if(tab===2)renderReview();else renderApptPage();}
+function render(){
+  if(!serverReady){
+    C().innerHTML=connError
+      ?`<div style="padding:24px 16px;color:#666;font-size:14px;line-height:1.8"><div style="font-size:16px;font-weight:600;color:#cc0000;margin-bottom:12px">連線失敗</div><div>${connError}</div><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#185FA5;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer">重新連線</button></div>`
+      :'<div class="loading">連線中...</div>';
+    return;
+  }
+  updateTabBar();updateUrineReminder();updateStoolReminder();if(tab===0)renderIO();else if(tab===1)renderVT();else if(tab===2)renderReview();else renderApptPage();}
 
 function showToast(title,lines,onOk){
   M().innerHTML=`<div class="modal-bg"><div class="modal-box">
@@ -1546,7 +1615,7 @@ function renderApptPage(){
   });
   
   if(past.length > 0){
-    html += `<div class="sec" style="margin-top:32px;color:var(--muted)"><span style="background:var(--muted)!important"></span>已過期</div>`;
+    html += `<div class="sec" style="margin-top:32px;color:var(--muted)"><span style="background:var(--muted)!important"></span>過去的掛號（全部保留）</div>`;
     past.forEach(a => {
       html += `
       <div style="background:#f8f9f8;border:1px solid var(--rim);border-radius:14px;padding:12px 14px 12px 18px;margin-bottom:10px;position:relative;opacity:.85">

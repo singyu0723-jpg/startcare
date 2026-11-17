@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-<title>星辰護理日誌</title>
+<title>星辰畢業了</title>
 <link rel="manifest" href="manifest.json"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -94,6 +94,11 @@ body{
   transition:all .15s;background:transparent;
 }
 .tab.active{color:var(--brand-deep);background:#fff;box-shadow:var(--shadow-xs);border:1px solid var(--rim)}
+/* 2026-11-18：暫時關閉的功能 */
+.tab-off{opacity:.38}
+.tab-off.active{color:var(--muted)}
+.dim-off{opacity:.42;filter:grayscale(.7);pointer-events:none}
+.off-note{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;line-height:1.9}
 
 /* ── 未解尿提醒列 ── */
 .ur-bar{
@@ -485,7 +490,7 @@ body{
 <body>
 <div class="app" id="root">
   <div class="top-bar">
-    <div class="brand">星辰 <em>護理日誌</em></div>
+    <div class="brand">星辰 <em>畢業了</em></div>
     <div style="display:flex;align-items:center;gap:8px">
       <span class="sync-dot" id="sync-dot"></span>
       <div class="cg-pill" id="cg-pill" onclick="window.showNameModal()">設定名字</div>
@@ -494,10 +499,10 @@ body{
   <div id="urine-reminder"></div>
   <div id="stool-reminder"></div>
   <div class="tab-bar">
-    <div class="tab active" onclick="window.goTab(0)">輸出入量</div>
-    <div class="tab" onclick="window.goTab(1)">每日照顧</div>
+    <div class="tab tab-off" onclick="window.goTab(0)">輸出入量</div>
+    <div class="tab tab-off" onclick="window.goTab(1)">每日照顧</div>
     <div class="tab" onclick="window.goTab(2)">查閱記錄</div>
-    <div class="tab" onclick="window.goTab(3)">掛號紀錄</div>
+    <div class="tab active" onclick="window.goTab(3)">掛號紀錄</div>
   </div>
   <div class="pg" id="content"><div class="loading">連線中...</div></div>
 </div>
@@ -522,13 +527,13 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const DOC_REF = doc(db, "appData", "care_tracker_v1");
 
-let tab=0, cgName='', ioRecs=[], vtRecs=[], apptRecs=[], careRecs=[], chartInst=null, chartType='io', chartRange='week', viewDate='';
+let tab=3, cgName='', ioRecs=[], vtRecs=[], apptRecs=[], careRecs=[], chartInst=null, chartType='io', chartRange='week', viewDate='';
 let isSaving=false;
 let editMode=false;
 
 // ── 簡繁切換 ──
 const ZH_TW_TO_CN = {
-  '護理日誌':'护理日志','設定名字':'设定名字','連線中':'连线中',
+  '護理日誌':'护理日志','畢業了':'毕业了','設定名字':'设定名字','連線中':'连线中',
   '輸出入量':'输出入量','生理狀態':'生理状态','查閱記錄':'查阅记录','掛號紀錄':'挂号记录',
   '當天合計':'当天合计','總輸入':'总输入','總輸出':'总输出',
   '每日照顧':'每日照顾','每日照顧表':'每日照顾表',
@@ -881,7 +886,7 @@ function updateUrineReminder(){
   if(!box) return;
   box.innerHTML=`<div class="ur-bar ur-peace">
     <span class="ur-ico">✨</span>
-    <span class="ur-txt">星辰已經圓滿，大家加油！繼續生活，星辰與我們同在！</span>
+    <span class="ur-txt">星辰已經圓滿，大家加油！繼續生活，星辰與我們同在！<br/>大家辛苦了！</span>
   </div>`;
 }
 
@@ -921,7 +926,9 @@ function render(){
       :'<div class="loading">連線中...</div>';
     return;
   }
-  updateTabBar();updateUrineReminder();updateStoolReminder();if(tab===0)renderIO();else if(tab===1)renderVT();else if(tab===2)renderReview();else renderApptPage();}
+  updateTabBar();updateUrineReminder();updateStoolReminder();
+  if(tab===0||tab===1){C().innerHTML=`<div class="off-note">此功能已暫時關閉<br/><span style="font-size:12.5px">過去的紀錄都還在，可在「查閱記錄」查看</span></div>`;return;}
+  if(tab===2)renderReview();else renderApptPage();}
 
 function showToast(title,lines,onOk){
   M().innerHTML=`<div class="modal-bg"><div class="modal-box">
@@ -1242,13 +1249,6 @@ function renderReview(){
     ?`<div class="ab">距離上次解尿，有過 ${ua.sRecs.length} 次解便</div>${ua.sRecs.map(r=>`<div class="ab">${r.time}　${r.stool}</div>`).join('')}`
     :`<div class="ab" style="opacity:.6">自上次解尿，也尚未解便</div>`;
   C().innerHTML=`
-  <div class="alert-box ${aC}">
-    <div class="at">${aI}尿液監測</div>
-    <div class="ab">${ua.label} 已 ${ua.hrs} 小時 ${ua.mins} 分</div>
-    <div class="ab">此段時間輸入水分：${ua.inAfter} cc</div>
-    <hr class="alert-divider"/>${stoolLines}
-  </div>
-  ${buildStoolAlert()}
   <div class="sec">${t('當日週期水分總量（07:00 起算）')}</div>
   <div class="sum-grid">
     <div class="sum-card"><div class="sl">${t('輸入水分')}</div><div class="sv">${inW}<span class="su"> cc</span></div></div>
@@ -1547,7 +1547,7 @@ function renderApptPage(){
   // past 按日期倒序
   past.sort((a,b)=> pd(b.date) - pd(a.date));
   
-  const patientOrder = ['弟弟','媽媽'];
+  const patientOrder = ['媽媽','弟弟'];
   let html = `
   <div style="display:flex;align-items:center;gap:10px;margin-top:6px;margin-bottom:18px">
     <div style="flex:1;font-size:17px;font-weight:700;color:var(--ink)">掛號紀錄</div>
@@ -1557,7 +1557,9 @@ function renderApptPage(){
   patientOrder.forEach(p => {
     const list = futurePatients[p] || [];
     if(list.length === 0 && !apptRecs.some(a=>a.patient===p)) return;
-    html += `<div class="sec" style="margin-top:24px">${p}</div>`;
+    const off = p==='弟弟';
+    html += `<div class="sec" style="margin-top:24px${off?';opacity:.45':''}">${p}</div>`;
+    if(off) html += `<div class="dim-off">`;
     if(list.length === 0){
       html += `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">尚無即將回診</div>`;
     } else {
@@ -1601,6 +1603,7 @@ function renderApptPage(){
         </div>`;
       });
     }
+    if(off) html += `</div>`;
   });
   
   if(past.length > 0){
@@ -1637,7 +1640,7 @@ window.showApptForm = function(editId){
     <div style="margin-bottom:14px">
       <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:8px">病人</div>
       <div style="display:flex;gap:8px">
-        <button type="button" id="ap-p-弟弟" class="sel-btn" style="flex:1;height:44px" onclick="window.selApptPatient('弟弟')">弟弟</button>
+        <button type="button" id="ap-p-弟弟" class="sel-btn dim-off" style="flex:1;height:44px" disabled>弟弟</button>
         <button type="button" id="ap-p-媽媽" class="sel-btn" style="flex:1;height:44px" onclick="window.selApptPatient('媽媽')">媽媽</button>
       </div>
     </div>
@@ -1682,7 +1685,7 @@ window.showApptForm = function(editId){
       <button class="modal-ok" onclick="window.saveAppt()" style="flex:1">${editId?'儲存':'新增'}</button>
     </div>
   </div></div>`;
-  _apptPatient = a ? a.patient : '弟弟';
+  _apptPatient = a ? a.patient : '媽媽';
   _apptSession = a ? (a.session || '上午') : '上午';
   setTimeout(()=>{
     const b=document.getElementById('ap-p-'+_apptPatient);
@@ -1692,7 +1695,7 @@ window.showApptForm = function(editId){
   },50);
 };
 
-let _apptPatient = '弟弟';
+let _apptPatient = '媽媽';
 let _apptSession = '上午';
 window.selApptPatient = function(p){
   _apptPatient = p;

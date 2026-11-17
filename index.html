@@ -98,7 +98,8 @@ body{
 .tab-off{opacity:.38}
 .tab-off.active{color:var(--muted)}
 .dim-off{opacity:.42;filter:grayscale(.7);pointer-events:none}
-.off-note{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;line-height:1.9}
+.keep-note{text-align:center;margin:6px 0 14px;font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.06em}
+.keep-page{opacity:.45;filter:grayscale(.55)}
 
 /* ── 未解尿提醒列 ── */
 .ur-bar{
@@ -927,8 +928,18 @@ function render(){
     return;
   }
   updateTabBar();updateUrineReminder();updateStoolReminder();
-  if(tab===0||tab===1){C().innerHTML=`<div class="off-note">此功能已暫時關閉<br/><span style="font-size:12.5px">過去的紀錄都還在，可在「查閱記錄」查看</span></div>`;return;}
+  if(tab===0){renderIO();keepsake();return;}
+  if(tab===1){renderVT();keepsake();return;}
   if(tab===2)renderReview();else renderApptPage();}
+// 2026-11-18：輸出入量、每日照顧保留原畫面作紀念，整頁變淡、不可操作
+function keepsake(){
+  const c=C();
+  const wrap=document.createElement('div');wrap.className='dim-off keep-page';
+  while(c.firstChild) wrap.appendChild(c.firstChild);
+  const note=document.createElement('div');note.className='keep-note';
+  note.innerHTML='這一頁留著作紀念　✨';
+  c.appendChild(note);c.appendChild(wrap);
+}
 
 function showToast(title,lines,onOk){
   M().innerHTML=`<div class="modal-bg"><div class="modal-box">

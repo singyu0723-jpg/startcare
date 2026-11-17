@@ -106,6 +106,7 @@ body{
 .ur-bar .ur-txt{flex:1;line-height:1.4}
 .ur-warn{background:var(--warn-soft);border-color:#ecd29d;color:#7a4f11}
 .ur-danger{background:var(--danger-soft);border-color:#efc1b2;color:#7a2a1a}
+.ur-peace{background:var(--brand-soft);border-color:var(--rim-2);color:var(--brand-deep);cursor:default;text-align:center;justify-content:center;font-weight:700}
 .ur-bar:active{transform:scale(.99)}
 
 /* ── 每日照顧表 checklist ── */
@@ -874,37 +875,20 @@ function updateTabBar(){
 }
 
 // ── 標題下方：超過6小時未解尿提醒列（所有分頁常駐，每分鐘更新）──
+// 2026-11-17：首頁不再顯示未解尿／未解便提醒，改為一句話
 function updateUrineReminder(){
   const box=el('urine-reminder');
   if(!box) return;
-  if(!cgName){box.innerHTML='';return;}
-  const ua=getUA();
-  if(ua.hrs<6){box.innerHTML='';return;}
-  const danger=ua.hrs>=8;
-  const cls=danger?'ur-danger':'ur-warn';
-  const icon=danger?'⚠':'⏰';
-  const tip=danger?t('警告：'):t('提醒：');
-  box.innerHTML=`<div class="ur-bar ${cls}" onclick="window.goTab(2)">
-    <span class="ur-ico">${icon}</span>
-    <span class="ur-txt">${tip}已 ${ua.hrs} 小時 ${ua.mins} 分未解尿</span>
+  box.innerHTML=`<div class="ur-bar ur-peace">
+    <span class="ur-ico">✨</span>
+    <span class="ur-txt">星辰已經圓滿，大家加油！繼續生活，星辰與我們同在！</span>
   </div>`;
 }
 
 // ── 標題下方：超過2.5天未解便提醒列（與解尿同區，每分鐘更新）──
 function updateStoolReminder(){
   const box=el('stool-reminder');
-  if(!box) return;
-  if(!cgName){box.innerHTML='';return;}
-  const si=getStoolInfo();
-  if(si.totalHrs<60){box.innerHTML='';return;}   // 未滿 2.5 天不顯示
-  const danger=si.totalHrs>=72;                   // 滿 3 天轉紅
-  const cls=danger?'ur-danger':'ur-warn';
-  const icon=danger?'⚠':'⏰';
-  const tip=danger?t('警告：'):t('提醒：');
-  box.innerHTML=`<div class="ur-bar ${cls}" onclick="window.goTab(2)">
-    <span class="ur-ico">${icon}</span>
-    <span class="ur-txt">${tip}已 ${si.days} 天 ${si.hrs} 小時未解便</span>
-  </div>`;
+  if(box) box.innerHTML='';
 }
 
 window.showNameModal=function(){

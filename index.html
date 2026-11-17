@@ -502,7 +502,7 @@ body{
   <div class="tab-bar">
     <div class="tab tab-off" onclick="window.goTab(0)">輸出入量</div>
     <div class="tab tab-off" onclick="window.goTab(1)">每日照顧</div>
-    <div class="tab" onclick="window.goTab(2)">查閱記錄</div>
+    <div class="tab tab-off" onclick="window.goTab(2)">查閱記錄</div>
     <div class="tab active" onclick="window.goTab(3)">掛號紀錄</div>
   </div>
   <div class="pg" id="content"><div class="loading">連線中...</div></div>
@@ -930,14 +930,16 @@ function render(){
   updateTabBar();updateUrineReminder();updateStoolReminder();
   if(tab===0){renderIO();keepsake();return;}
   if(tab===1){renderVT();keepsake();return;}
-  if(tab===2)renderReview();else renderApptPage();}
+  if(tab===2){renderReview();return;}
+  renderApptPage();}
 // 2026-11-18：輸出入量、每日照顧保留原畫面作紀念，整頁變淡、不可操作
-function keepsake(){
+function keepsake(browsable){
   const c=C();
-  const wrap=document.createElement('div');wrap.className='dim-off keep-page';
+  const wrap=document.createElement('div');wrap.className=(browsable?'':'dim-off ')+'keep-page';
+  if(browsable){const eb=c.querySelector('.edit-toggle');if(eb)eb.remove();}
   while(c.firstChild) wrap.appendChild(c.firstChild);
   const note=document.createElement('div');note.className='keep-note';
-  note.innerHTML='這一頁留著作紀念　✨';
+  note.innerHTML='這是星辰陪伴我們的紀念　✨';
   c.appendChild(note);c.appendChild(wrap);
 }
 
@@ -1287,6 +1289,7 @@ function renderReview(){
   </div>
   ${buildDaySummary()}
   ${buildDayDetail()}`;
+  keepsake(true);
   setTimeout(()=>drawChart(),80);
 }
 
@@ -1570,7 +1573,7 @@ function renderApptPage(){
     if(list.length === 0 && !apptRecs.some(a=>a.patient===p)) return;
     const off = p==='弟弟';
     html += `<div class="sec" style="margin-top:24px${off?';opacity:.45':''}">${p}</div>`;
-    if(off) html += `<div class="dim-off">`;
+    if(off) html += `<div class="keep-note" style="margin-top:-4px">這是星辰陪伴我們的紀念　✨</div><div class="dim-off keep-page">`;
     if(list.length === 0){
       html += `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">尚無即將回診</div>`;
     } else {

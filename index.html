@@ -112,8 +112,18 @@ body{
 .ur-bar .ur-txt{flex:1;line-height:1.4}
 .ur-warn{background:var(--warn-soft);border-color:#ecd29d;color:#7a4f11}
 .ur-danger{background:var(--danger-soft);border-color:#efc1b2;color:#7a2a1a}
-.ur-peace{background:var(--brand-soft);border-color:var(--rim-2);color:var(--brand-deep);cursor:default;text-align:center;justify-content:center;font-weight:700;padding:26px 16px;font-size:15px;line-height:1.9;margin-top:14px;margin-bottom:4px;border-radius:16px}
-.ur-peace .ur-ico{font-size:20px}
+/* 紀念語：直排三行，字級隨螢幕寬度縮放，任何機型都不會被裁到 */
+.ur-peace{
+  flex-direction:column;gap:10px;cursor:default;
+  background:var(--brand-soft);border-color:var(--rim-2);color:var(--brand-deep);
+  margin:14px 14px 4px;padding:22px 12px 24px;border-radius:16px;
+  text-align:center;font-weight:700;
+  font-size:clamp(13px, 4.3vw, 17px);line-height:1.75;letter-spacing:.04em;
+}
+.ur-peace .ur-ico{font-size:clamp(18px, 5.5vw, 24px);line-height:1}
+.ur-peace .ur-txt{display:block;width:100%}
+.ur-peace .ur-txt span{display:block;white-space:nowrap}
+.ur-peace .ur-txt span:last-child{margin-top:4px}
 .ur-bar:active{transform:scale(.99)}
 
 /* ── 每日照顧表 checklist ── */
@@ -888,7 +898,7 @@ function updateUrineReminder(){
   if(!box) return;
   box.innerHTML=`<div class="ur-bar ur-peace">
     <span class="ur-ico">✨</span>
-    <span class="ur-txt">星辰已經圓滿，大家加油！繼續生活，星辰與我們同在！<br/>大家辛苦了！</span>
+    <span class="ur-txt"><span>星辰已經圓滿，大家加油！</span><span>繼續生活，星辰與我們同在！</span><span>大家辛苦了！</span></span>
   </div>`;
 }
 
